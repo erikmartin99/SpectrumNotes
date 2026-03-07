@@ -1,13 +1,33 @@
+# Project name
+
 SpectrumNotes
-Windows desktop app built with C#/.NET (WinForms) in VisualStudio
 
-Contributing
-
-Fork the repo and open a Pull Request.
-
-If you want to port to a different platform, I'd suggest starting a new repo, and I can link it here.
-
-License
+## License
 
 GPL-3.0-or-later. See LICENSE.
 Copyright (C) 2026 Erik Martin.
+
+## Overview
+
+Live polyphonic pitch and harmonic analysis. Automatic pitch, harmonic, chord, and key detection.
+
+VisualStudio C# WinForms Windows Desktop Application
+
+## Installation
+
+Run the Windows installer from the latest GitHub release.
+
+## Usage
+
+See Screenshots
+
+## Screenshots
+
+!(./docs/general.png)
+!(./docs/vocal.png)
+!(./docs/harmonics.png)
+
+## Contributing
+
+Email me, fork the repo and open a Pull Request.
+

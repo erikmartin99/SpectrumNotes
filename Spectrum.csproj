@@ -1,0 +1,48 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <ApplicationIcon>Contents\favicon.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Ignore\**" />
+    <EmbeddedResource Remove="Ignore\**" />
+    <None Remove="Ignore\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Form1 - Copy.cs" />
+    <Compile Remove="Form2.cs" />
+    <Compile Remove="Form2.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Remove="Form2.resx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="181-637-14.pdf" />
+    <None Remove="model.onnx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Contents\favicon.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.23.2" />
+    <PackageReference Include="NAudio" Version="2.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Installer\" />
+  </ItemGroup>
+
+</Project>

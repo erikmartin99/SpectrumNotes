@@ -1,11 +1,13 @@
-# Project name
-
-SpectrumNotes
+# SpectrumNotes
 
 ## License
 
 GPL-3.0-or-later. See LICENSE.
 Copyright (C) 2026 Erik Martin.
+
+## Disclaimer
+
+This software is provided as-is with no warranty. Pitch detection accuracy varies and should not be relied upon for critical applications.
 
 ## Overview
 
@@ -15,13 +17,9 @@ VisualStudio C# WinForms Windows Desktop Application
 
 ## Installation
 
-Run the Windows installer from the latest GitHub release.
+Run the Windows installer from the latest GitHub release. (See the "releases" link, possibly on the right.)
 
 ## Usage
-
-See Screenshots
-
-## Screenshots
 
 ![Alt Text](./docs/general.png)
 ![Alt Text](./docs/vocal.png)

@@ -207,8 +207,8 @@ namespace Spectrum
                 "30.0", "Very stable key detection, if you just want the key and don't expect modulations."));
 
             ParamHint.Register(lbEmail, new ParamHintInfo(
-                "If you want to donate money to the effort oyou can venmo or paypal to this address. If you think you can improve it, look for the SpectrumNotes" +
-                " project on GitHub and shoot me an email. <Click to copy address to clipboard>.", null, null, null, null));
+                "If you want to improve the program, look for SpectrumNotes on GitHub, fork the project, submit a pull request, and shoot me an email. "
+                "Click to copy email address to clipboard.", null, null, null, null));
 
         }
     }

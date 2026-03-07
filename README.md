@@ -24,8 +24,8 @@ See Screenshots
 ## Screenshots
 
 ![Alt Text](./docs/general.png)
-!(./docs/vocal.png)
-!(./docs/harmonics.png)
+![Alt Text](./docs/vocal.png)
+![Alt Text](./docs/harmonics.png)
 
 ## Contributing
 

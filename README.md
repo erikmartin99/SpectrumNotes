@@ -1,5 +1,11 @@
 # SpectrumNotes
 
+## Overview
+
+Live polyphonic pitch and harmonic analysis. Automatic pitch, harmonic, chord, and key detection.
+
+VisualStudio C# WinForms Windows Desktop Application
+
 ## License
 
 GPL-3.0-or-later. See LICENSE.
@@ -8,12 +14,6 @@ Copyright (C) 2026 Erik Martin.
 ## Disclaimer
 
 This software is provided as-is with no warranty. Pitch detection accuracy varies and should not be relied upon for critical applications.
-
-## Overview
-
-Live polyphonic pitch and harmonic analysis. Automatic pitch, harmonic, chord, and key detection.
-
-VisualStudio C# WinForms Windows Desktop Application
 
 ## Installation
 

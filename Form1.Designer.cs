@@ -348,7 +348,7 @@ namespace Spectrum
             btnRecord.BackColor = Color.FromArgb(139, 0, 0);
             btnRecord.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             btnRecord.ForeColor = Color.White;
-            btnRecord.Location = new Point(19, 789);
+            btnRecord.Location = new Point(9, 667);
             btnRecord.Name = "btnRecord";
             btnRecord.Size = new Size(101, 30);
             btnRecord.TabIndex = 300;
@@ -358,7 +358,7 @@ namespace Spectrum
             // 
             // pbKey
             // 
-            pbKey.Location = new Point(160, 382);
+            pbKey.Location = new Point(156, 336);
             pbKey.Name = "pbKey";
             pbKey.Size = new Size(130, 154);
             pbKey.TabIndex = 65;

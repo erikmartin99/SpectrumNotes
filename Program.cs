@@ -1,3 +1,4 @@
+//Copyright (c) 2026, Erik Martin
 namespace Spectrum
 {
     internal static class Program

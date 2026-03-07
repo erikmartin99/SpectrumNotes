@@ -1,5 +1,5 @@
+//Copyright (c) 2026, Erik Martin
 // Auto key/mode detection using ridge-weighted long-term EMA chroma profile.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;

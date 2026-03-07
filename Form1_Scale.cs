@@ -1,4 +1,4 @@
-// Form1_Scale.cs  —  drop alongside Form1.cs in the same project.
+//Copyright (c) 2026, Erik Martin
 // Adds key-signature / mode filtering to the spectrogram grid overlay.
 //
 // Two ComboBoxes are added to the Analysis tab (see Form1_Designer patch):

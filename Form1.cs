@@ -1,4 +1,5 @@
-﻿using NAudio.CoreAudioApi;
+﻿//Copyright (c) 2026, Erik Martin
+using NAudio.CoreAudioApi;
 using NAudio.Wave;
 using System;
 using System.Buffers;

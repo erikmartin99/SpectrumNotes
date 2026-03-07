@@ -1,4 +1,4 @@
-// Form1_ParamHintReg.cs  —  drop alongside Form1.cs in the same project.
+//Copyright (c) 2026, Erik Martin
 // Contains only RegisterParamHints(), called once from the Form1 constructor
 // immediately after InitializeComponent().  All ParamHint.Register() calls live
 // here so the Designer never touches them.

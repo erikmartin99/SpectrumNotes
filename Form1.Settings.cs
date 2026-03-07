@@ -1,4 +1,4 @@
-// Form1.Settings.cs  —  drop alongside Form1.cs in the same project.
+//Copyright (c) 2026, Erik Martin
 using System;
 using System.IO;
 using System.Text.Json;

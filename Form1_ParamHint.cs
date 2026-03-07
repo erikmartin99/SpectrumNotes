@@ -1,4 +1,4 @@
-// Form1_ParamHint.cs  —  drop alongside Form1.cs in the same project.
+//Copyright (c) 2026, Erik Martin
 // Replaces the standard ToolTip with a custom square popup that shows:
 //   • A description of the parameter
 //   • A recommended LOW value + its use case

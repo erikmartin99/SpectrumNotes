@@ -23,7 +23,7 @@ See Screenshots
 
 ## Screenshots
 
-!(./docs/general.png)
+![Alt Text](./docs/general.png)
 !(./docs/vocal.png)
 !(./docs/harmonics.png)
 

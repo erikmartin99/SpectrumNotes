@@ -1,6 +1,6 @@
 [Setup]
 AppName=SpectrumNotes
-AppVersion=1.0
+AppVersion=1.0.0
 AppPublisher=Erik Martin
 AppPublisherURL=https://erikmartin.com
 WizardStyle=modern

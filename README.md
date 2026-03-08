@@ -7,8 +7,7 @@ Live polyphonic pitch and harmonic analysis. Automatic pitch, harmonic, chord, a
 Windows 10+ 64-bit desktop application
 
 ## Download
-[⬇️ Download Release v1.0.0](https://github.com/erikmartin99/SpectrumNotes/releases/download/v1.0.0/SpectrumNotesSetup.exe)
-[Latest Release Page](https://github.com/erikmartin99/SpectrumNotes/releases/latest)
+[⬇️ Download Version v1.0.0](https://github.com/erikmartin99/SpectrumNotes/releases/download/v1.0.0/SpectrumNotesSetup.exe)
 
 ## License
 

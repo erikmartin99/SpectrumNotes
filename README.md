@@ -4,7 +4,11 @@
 
 Live polyphonic pitch and harmonic analysis. Automatic pitch, harmonic, chord, and key detection.
 
-VisualStudio C# WinForms Windows Desktop Application
+Windows 10+ 64-bit desktop application
+
+## Download
+
+[⬇️ Download Latest Release](https://github.com/erikmartin99/SpectrumNotes/releases/latest)
 
 ## License
 
@@ -27,5 +31,5 @@ Run the Windows installer from the latest GitHub release. (See the "releases" li
 
 ## Contributing
 
-Email me, fork the repo and open a Pull Request.
+Fork the repo, open a Pull Request, and send me an email.
 

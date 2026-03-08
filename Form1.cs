@@ -3497,7 +3497,7 @@ namespace Spectrum
 
             for (int i = 0; i < 12; i++) chroma[i] /= total;
 
-            UpdateKeyEmaFromRidges();
+            if (!scrollPaused) UpdateKeyEmaFromRidges();
 
             string notesInstant = ChordNotesText(chroma);
             lastDetectedNotesText = notesInstant;

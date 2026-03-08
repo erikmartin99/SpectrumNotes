@@ -75,7 +75,7 @@ namespace Spectrum
         private readonly Dictionary<int, Ridge> _ridgeById = new(MaxActiveRidges);
 
         // ── Peak / Ridge ─────────────────────────────────────────────────────
-        private int MAX_PEAKS_PER_FRAME = 10;
+        private int MAX_PEAKS_PER_FRAME = 25;
         private double PEAK_MIN_REL = 0.03;
         private double PEAK_MIN_SPACING_CENTS = 0.0;
 

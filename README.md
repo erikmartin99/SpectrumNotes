@@ -9,6 +9,8 @@ Windows 10+ 64-bit desktop application
 ## Download
 [⬇️ Download Version v1.0.0](https://github.com/erikmartin99/SpectrumNotes/releases/download/v1.0.0/SpectrumNotesSetup.exe)
 
+[Check if tere's a more recent release](https://github.com/erikmartin99/SpectrumNotes/releases/)
+
 ## License
 
 GPL-3.0-or-later. See LICENSE.
@@ -30,5 +32,4 @@ Run the Windows installer from the latest GitHub release. (See the "releases" li
 
 ## Contributing
 
-Fork the repo, open a Pull Request, and send me an email.
-
+[Fork the repo, open a Pull Request, and send me an email](https://github.com/erikmartin99/SpectrumNotes)

@@ -38,3 +38,4 @@ Run the Windows installer from the latest GitHub release. (See the "releases" li
 
 If you were looking for my youtube page, click here: [videos.erikmartin.com](https://videos.erikmartin.com/)
 
+![visitors](https://visitor-badge.laobi.icu/badge?page_id=erikmartin99.spectrumnotes)

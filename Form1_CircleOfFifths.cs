@@ -10,12 +10,19 @@
 // 1. Form1_Load, after InitScaleDropdowns():
 //        InitCircleOfFifths();
 //
-// 2. Pic_Paint, at the very top of the method body:
+// 2. Pic_Paint, before the bitmapLock block:
 //        if (cbShowCircle.Checked)
 //        {
 //            DrawCircleOfFifths(e.Graphics, pic.Width, pic.Height);
 //            return;
 //        }
+//
+// Key outline tiers (CoF distance from detected key wedge):
+//   Distance 0  — bright white, thick (the key itself)
+//   Distance 1  — medium white, normal (dominant & subdominant — 1 sharp/flat away)
+//   Distance 2  — dim white, thin (2 sharps/flats away)
+//
+// The detected key name is drawn outside the circle at the angle of its wedge.
 
 using System;
 using System.Drawing;
@@ -27,18 +34,17 @@ namespace Spectrum
 {
     public partial class Form1
     {
-        // ── State (written from any thread, read on paint thread) ─────────────
-        private volatile int _circleChordRoot = -1;   // pitch-class 0–11, or -1
+        // ── State ─────────────────────────────────────────────────────────────
+        private volatile int _circleChordRoot = -1;
         private volatile bool _circleChordIsMajor = true;
-        private volatile int _circleKeyRoot = -1;   // pitch-class 0–11, or -1
+        private volatile int _circleKeyRoot = -1;
         private volatile bool _circleKeyIsMajor = true;
 
-        // ── Circle-of-fifths layout ───────────────────────────────────────────
-        // Clockwise from 12 o'clock: C G D A E B F# Db Ab Eb Bb F
+        // ── Layout tables ─────────────────────────────────────────────────────
+        // CoF order clockwise from 12 o'clock: C G D A E B F# Db Ab Eb Bb F
         private static readonly int[] CofMajorPc =
             { 0, 7, 2, 9, 4, 11, 6, 1, 8, 3, 10, 5 };
 
-        // Relative minor pitch-class at the same CoF wedge index.
         private static readonly int[] CofMinorPc =
             { 9, 4, 11, 6, 1, 8, 3, 10, 5, 0, 7, 2 };
 
@@ -52,22 +58,27 @@ namespace Spectrum
         private static readonly string[] CofMinorLabelFlat =
             { "Am", "Em", "Bm", "Gbm", "Dbm", "Abm", "Ebm", "Bbm", "Fm", "Cm", "Gm", "Dm" };
 
-        // 6 consecutive CoF wedges span the diatonic set (IV I V ii vi iii).
-        // Bracket starts 1 wedge counter-clockwise from the key wedge.
         private const int DiatonicSpan = 6;
 
-        // ── Colour palette ────────────────────────────────────────────────────
-        private static readonly Color ColCircleChordMaj = Color.FromArgb(220, 155, 50);  // amber
-        private static readonly Color ColCircleChordMin = Color.FromArgb(95, 80, 210);  // violet
-        private static readonly Color ColCircleKeyLine = Color.FromArgb(255, 255, 255);  // white
-        private static readonly Color ColCircleDiatEdge = Color.FromArgb(70, 210, 140);  // mint
+        // ── Palette ───────────────────────────────────────────────────────────
+        private static readonly Color ColCircleChordMaj = Color.FromArgb(220, 155, 50);
+        private static readonly Color ColCircleChordMin = Color.FromArgb(95, 80, 210);
         private static readonly Color ColCircleWedgeMaj = Color.FromArgb(26, 26, 34);
         private static readonly Color ColCircleWedgeMin = Color.FromArgb(20, 20, 28);
         private static readonly Color ColCircleGrid = Color.FromArgb(52, 52, 62);
         private static readonly Color ColCircleLabelMaj = Color.FromArgb(205, 205, 225);
         private static readonly Color ColCircleLabelMin = Color.FromArgb(135, 135, 165);
+        private static readonly Color ColCircleDiatEdge = Color.FromArgb(70, 210, 140);
+        // Tiered key outlines
+        private static readonly Color ColKeyOutline0 = Color.FromArgb(255, 255, 255); // key itself
+        private static readonly Color ColKeyOutline1 = Color.FromArgb(220, 220, 255); // ±1 (dominant/subdominant)
+        private static readonly Color ColKeyOutline2 = Color.FromArgb(145, 145, 185); // ±2
+        // External key name label
+        private static readonly Color ColKeyNameLabel = Color.FromArgb(255, 210, 60); // golden yellow
+        // Chord degree label inside wedge corner
+        private static readonly Color ColDegreeLabel = Color.FromArgb(80, 120, 180); // cyan-mint: visible on both amber and violet
 
-        // ── Init (call from Form1_Load after InitScaleDropdowns) ─────────────
+        // ── Init ──────────────────────────────────────────────────────────────
         private void InitCircleOfFifths()
         {
             cbShowCircle.CheckedChanged += (s, e) =>
@@ -77,7 +88,7 @@ namespace Spectrum
             };
         }
 
-        // ── Called from SetChordLabelUi (Form1_AutoKey.cs) ───────────────────
+        // ── Called from SetChordLabelUi ───────────────────────────────────────
         internal void UpdateCircleOfFifths(string chordText)
         {
             ParseChordForCircle(chordText, out int chordPc, out bool chordMaj);
@@ -95,19 +106,16 @@ namespace Spectrum
 
         private void SyncKeyStateAndInvalidate()
         {
-            int rootIdx = cmbScaleRoot.SelectedIndex;  // 0=chromatic, 1..12=C..B
+            int rootIdx = cmbScaleRoot.SelectedIndex;
             int modeIdx = cmbScaleMode.SelectedIndex;
             _circleKeyRoot = rootIdx > 0 ? RootPitchClass[rootIdx] : -1;
-            // Minor-flavoured modes: 5=Aeolian, 7=Harmonic Minor,
-            //                        10=Pentatonic Minor, 11=Blues
             _circleKeyIsMajor = !(modeIdx == 5 || modeIdx == 7 ||
                                    modeIdx == 10 || modeIdx == 11);
-
             if (cbShowCircle.Checked && !pic.IsDisposed)
                 pic.Invalidate();
         }
 
-        // ── Main draw — called from Pic_Paint when cbShowCircle.Checked ──────
+        // ── Main draw ─────────────────────────────────────────────────────────
         internal void DrawCircleOfFifths(Graphics g, int w, int h)
         {
             g.SmoothingMode = SmoothingMode.AntiAlias;
@@ -120,16 +128,18 @@ namespace Spectrum
             float cy = h / 2f;
             float minDim = Math.Min(w, h);
 
-            float rOuter = minDim * 0.470f;   // outer edge of major ring
-            float rMid = minDim * 0.325f;   // major/minor ring boundary
-            float rInner = minDim * 0.190f;   // inner edge of minor ring
-            float rHole = minDim * 0.095f;   // centre hole radius
+            // Shrunk to leave margin for external key label and outline glow.
+            float rOuter = minDim * 0.370f;
+            float rMid = minDim * 0.256f;
+            float rInner = minDim * 0.150f;
+            float rHole = minDim * 0.075f;
+            // Radius where the key name sits outside the outer ring.
+            float rKeyLabel = rOuter + minDim * 0.075f;
 
             bool useFlats = cbFlats?.Checked ?? false;
             var majLabels = useFlats ? CofMajorLabelFlat : CofMajorLabelSharp;
             var minLabels = useFlats ? CofMinorLabelFlat : CofMinorLabelSharp;
 
-            // Snapshot volatile fields once.
             int chordPc = _circleChordRoot;
             bool chordMaj = _circleChordIsMajor;
             int keyPc = _circleKeyRoot;
@@ -137,60 +147,125 @@ namespace Spectrum
 
             int keyCofIdx = FindCofIdx(keyPc, keyMaj);
 
-            // ── Diatonic bracket (drawn first, behind wedges) ─────────────────
+            // ── Diatonic bracket ──────────────────────────────────────────────
             if (keyCofIdx >= 0)
                 DrawDiatonicBracket(g, cx, cy, rOuter, rInner, keyCofIdx);
 
             // ── Wedges ────────────────────────────────────────────────────────
             const float sweep = 360f / 12f;
-            const float origin = -90f - sweep / 2f;  // 12 o'clock centred on wedge
+            const float origin = -90f - sweep / 2f;
 
             using var gridPen = new Pen(ColCircleGrid, 0.8f);
 
             for (int i = 0; i < 12; i++)
             {
                 float sa = origin + i * sweep;
+                int cofDist = keyCofIdx >= 0 ? CofDistance(i, keyCofIdx) : int.MaxValue;
 
                 // — Major outer wedge —
                 bool majChordHit = chordMaj && chordPc == CofMajorPc[i];
-                bool majKeyHit = keyMaj && keyPc == CofMajorPc[i];
 
                 FillCofWedge(g, cx, cy, rMid, rOuter, sa, sweep,
                     majChordHit ? ColCircleChordMaj : ColCircleWedgeMaj);
                 DrawCofWedgeBorder(g, cx, cy, rMid, rOuter, sa, sweep, gridPen);
-                if (majKeyHit)
-                    DrawCofWedgeBorder(g, cx, cy, rMid, rOuter, sa, sweep,
-                        new Pen(ColCircleKeyLine, 2.5f));
+
+                // Tiered outline on the major ring (primary when key is major, secondary when minor).
+                if (cofDist <= 2)
+                {
+                    int majTier = keyMaj ? cofDist : cofDist + 1;
+                    if (majTier <= 2)
+                        DrawCofWedgeBorder(g, cx, cy, rMid, rOuter, sa, sweep,
+                            KeyOutlinePen(majTier));
+                }
 
                 // — Minor inner wedge —
                 bool minChordHit = !chordMaj && chordPc == CofMinorPc[i];
-                bool minKeyHit = !keyMaj && keyPc == CofMinorPc[i];
 
                 FillCofWedge(g, cx, cy, rInner, rMid, sa, sweep,
                     minChordHit ? ColCircleChordMin : ColCircleWedgeMin);
                 DrawCofWedgeBorder(g, cx, cy, rInner, rMid, sa, sweep, gridPen);
-                if (minKeyHit)
-                    DrawCofWedgeBorder(g, cx, cy, rInner, rMid, sa, sweep,
-                        new Pen(ColCircleKeyLine, 2.5f));
+
+                // Tiered outline on the minor ring (primary when key is minor, secondary when major).
+                if (cofDist <= 2)
+                {
+                    int minTier = !keyMaj ? cofDist : cofDist + 1;
+                    if (minTier <= 2)
+                        DrawCofWedgeBorder(g, cx, cy, rInner, rMid, sa, sweep,
+                            KeyOutlinePen(minTier));
+                }
 
                 // — Labels —
                 float midRad = (sa + sweep / 2f) * (float)(Math.PI / 180.0);
+                bool majKeyHit = keyMaj && keyPc == CofMajorPc[i];
+                bool minKeyHit = !keyMaj && keyPc == CofMinorPc[i];
+                bool majActive = majChordHit || majKeyHit;
+                bool minActive = minChordHit || minKeyHit;
 
-                float lrMaj = (rMid + rOuter) / 2f;
+                // Major chord label — ~1.75x bigger than before
                 DrawCofLabel(g, majLabels[i],
-                    cx + lrMaj * (float)Math.Cos(midRad),
-                    cy + lrMaj * (float)Math.Sin(midRad),
-                    majChordHit || majKeyHit ? Color.White : ColCircleLabelMaj,
-                    majChordHit || majKeyHit ? 13f : 11f,
-                    majChordHit || majKeyHit);
+                    cx + (rMid + rOuter) / 2f * (float)Math.Cos(midRad),
+                    cy + (rMid + rOuter) / 2f * (float)Math.Sin(midRad),
+                    majActive ? Color.White : ColCircleLabelMaj,
+                    majActive ? 26f : 22f, majActive);
 
-                float lrMin = (rInner + rMid) / 2f;
+                // Minor chord label — ~1.75x bigger than before
                 DrawCofLabel(g, minLabels[i],
-                    cx + lrMin * (float)Math.Cos(midRad),
-                    cy + lrMin * (float)Math.Sin(midRad),
-                    minChordHit || minKeyHit ? Color.White : ColCircleLabelMin,
-                    minChordHit || minKeyHit ? 10f : 8.5f,
-                    minChordHit || minKeyHit);
+                    cx + (rInner + rMid) / 2f * (float)Math.Cos(midRad),
+                    cy + (rInner + rMid) / 2f * (float)Math.Sin(midRad),
+                    minActive ? Color.White : ColCircleLabelMin,
+                    minActive ? 19f : 16f, minActive);
+
+                // Degree numerals in the corner of each outlined wedge.
+                if (keyCofIdx >= 0 && cofDist <= 3)
+                {
+                    // Signed offset in CoF steps (+CW = sharper, -CCW = flatter).
+                    int signedOffset = i - keyCofIdx;
+                    if (signedOffset > 6) signedOffset -= 12;
+                    if (signedOffset < -5) signedOffset += 12;
+
+                    // Corner position: near the CW edge and inner arc of each ring.
+                    float cornerAngle = sa + sweep * 0.80f;
+                    float cornerRad = cornerAngle * (float)(Math.PI / 180.0);
+
+                    // Major ring degree — only for diatonic major/dominant chords.
+                    string majDegree = keyMaj
+                        ? MajKeyMajRingDegree(signedOffset)
+                        : MinKeyMajRingDegree(signedOffset);
+
+                    // Minor ring degree — only for diatonic minor chords.
+                    string minDegree = keyMaj
+                        ? MajKeyMinRingDegree(signedOffset)
+                        : MinKeyMinRingDegree(signedOffset);
+
+                    if (majDegree != null)
+                    {
+                        float rCornerMaj = rMid + (rOuter - rMid) * 0.22f;
+                        DrawCofLabel(g, majDegree,
+                            cx + rCornerMaj * (float)Math.Cos(cornerRad),
+                            cy + rCornerMaj * (float)Math.Sin(cornerRad),
+                            ColDegreeLabel, 10f, bold: true);
+                    }
+
+                    if (minDegree != null)
+                    {
+                        float rCornerMin = rInner + (rMid - rInner) * 0.22f;
+                        DrawCofLabel(g, minDegree,
+                            cx + rCornerMin * (float)Math.Cos(cornerRad),
+                            cy + rCornerMin * (float)Math.Sin(cornerRad),
+                            ColDegreeLabel, 10f, bold: true);
+                    }
+                }
+            }
+
+            // ── Key name outside the ring at the key wedge's angle ────────────
+            if (keyCofIdx >= 0)
+            {
+                float keyMidRad = (origin + keyCofIdx * sweep + sweep / 2f)
+                                  * (float)(Math.PI / 180.0);
+                DrawCofLabel(g, BuildKeyName(useFlats, keyMaj),
+                    cx + rKeyLabel * (float)Math.Cos(keyMidRad),
+                    cy + rKeyLabel * (float)Math.Sin(keyMidRad),
+                    ColKeyNameLabel, 15f, bold: true);
             }
 
             // ── Centre hole with chord symbol ─────────────────────────────────
@@ -204,8 +279,101 @@ namespace Spectrum
             Color centreCol = chordPc < 0 ? Color.FromArgb(75, 75, 95)
                             : chordMaj ? ColCircleChordMaj
                                           : ColCircleChordMin;
-            DrawCofLabel(g, centreText, cx, cy, centreCol, 14f, bold: true);
+            DrawCofLabel(g, centreText, cx, cy, centreCol, 13f, bold: true);
         }
+
+        // ── CoF distance: shortest path around the 12-wedge circle (0–6) ─────
+        private static int CofDistance(int idxA, int idxB)
+        {
+            int d = Math.Abs(idxA - idxB);
+            return Math.Min(d, 12 - d);
+        }
+
+        // ── Pen for each outline tier ─────────────────────────────────────────
+        private static Pen KeyOutlinePen(int dist) => dist switch
+        {
+            0 => new Pen(ColKeyOutline0, 3.5f),
+            1 => new Pen(ColKeyOutline1, 2.4f),
+            _ => new Pen(ColKeyOutline2, 1.5f),
+        };
+
+        // ── Key name string ───────────────────────────────────────────────────
+        private string BuildKeyName(bool useFlats, bool keyMaj)
+        {
+            int rootIdx = cmbScaleRoot.SelectedIndex;
+            if (rootIdx <= 0) return "";
+
+            string root = cmbScaleRoot.Items[rootIdx]?.ToString() ?? "";
+            // Items like "C#/D♭" — pick the appropriate side.
+            if (root.Contains('/'))
+            {
+                var parts = root.Split('/');
+                root = useFlats ? parts[1] : parts[0];
+            }
+
+            int modeIdx = cmbScaleMode.SelectedIndex;
+            string suffix = modeIdx switch
+            {
+                0 => "",
+                5 => "m",
+                7 => "m♮",
+                10 => "m pent",
+                11 => "blues",
+                _ => ""
+            };
+            return root + suffix;
+        }
+
+        // ── Diatonic degree Roman numerals ────────────────────────────────────
+        // signedOffset = CoF steps from key wedge (+ = CW = sharper, - = CCW = flatter).
+        //
+        // For a MAJOR key:
+        //   CoF:  -1    0    +1    +2    +3    -2    -3
+        //   Maj:  IV    I     V    —     —     —     —
+        //   Min:  ii    vi    iii   —     vii°  —     —
+        //
+        // For a MINOR (natural) key:
+        //   CoF:  -1    0    +1    +2    +3    -2    -3
+        //   Min:  iv    i     v    ii°   —     —     —
+        //   Maj:  VI    III   VII   —     —     —     —
+        //   (III/VI/VII are the borrowed/relative major chords)
+
+        // Major key — major ring (I, IV, V only — all other major chords non-diatonic)
+        private static string MajKeyMajRingDegree(int offset) => offset switch
+        {
+            0 => "I",
+            -1 => "IV",
+            +1 => "V",
+            _ => null
+        };
+
+        // Major key — minor ring (ii, iii, vi, vii°)
+        private static string MajKeyMinRingDegree(int offset) => offset switch
+        {
+            0 => "vi",
+            -1 => "ii",
+            +1 => "iii",
+            +2 => "vii°",
+            _ => null
+        };
+
+        // Minor key — minor ring (i, iv, v)
+        private static string MinKeyMinRingDegree(int offset) => offset switch
+        {
+            0 => "i",
+            -1 => "iv",
+            +1 => "v",
+            _ => null
+        };
+
+        // Minor key — major ring (III, VI, VII — the relative/borrowed majors)
+        private static string MinKeyMajRingDegree(int offset) => offset switch
+        {
+            0 => "III",
+            -1 => "VI",
+            +1 => "VII",
+            _ => null
+        };
 
         // ── Diatonic bracket ──────────────────────────────────────────────────
         private static void DrawDiatonicBracket(Graphics g,
@@ -282,7 +450,6 @@ namespace Spectrum
             if (pc < 0) return;
 
             string rest = consumed < text.Length ? text.Substring(consumed) : "";
-            // Minor: 'm' not followed by 'a' (which would be "maj").
             if (rest.Length >= 1 && rest[0] == 'm' &&
                 !(rest.Length >= 3 &&
                   char.ToLower(rest[1]) == 'a' && char.ToLower(rest[2]) == 'j'))

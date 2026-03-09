@@ -114,6 +114,7 @@ namespace Spectrum
             lblFpsReadout = new Label();
             panel2 = new Panel();
             pic = new SpectrogramPanel();
+            cbShowCircle = new CheckBox();
             panel1.SuspendLayout();
             tabControl1.SuspendLayout();
             tabAnalysis.SuspendLayout();
@@ -206,6 +207,7 @@ namespace Spectrum
             // 
             // tabAnalysis
             // 
+            tabAnalysis.Controls.Add(cbShowCircle);
             tabAnalysis.Controls.Add(label2);
             tabAnalysis.Controls.Add(cmbScaleMode);
             tabAnalysis.Controls.Add(cbAutoKey);
@@ -1055,6 +1057,16 @@ namespace Spectrum
             pic.TabIndex = 0;
             pic.TabStop = false;
             // 
+            // cbShowCircle
+            // 
+            cbShowCircle.AutoSize = true;
+            cbShowCircle.Location = new Point(7, 506);
+            cbShowCircle.Name = "cbShowCircle";
+            cbShowCircle.Size = new Size(237, 19);
+            cbShowCircle.TabIndex = 313;
+            cbShowCircle.Text = "Show Chords and Key on Circle of Fifths";
+            cbShowCircle.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -1195,5 +1207,6 @@ namespace Spectrum
         private TextBox tbKeyEmaSeconds;
         private ComboBox cmbScaleRoot;
         private TextBox tbRidgeMatchLogHzPredBoost;
+        private CheckBox cbShowCircle;
     }
 }

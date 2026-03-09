@@ -92,6 +92,7 @@ namespace Spectrum
             [JsonPropertyName("scale_root")] public string ScaleRoot { get; set; } = "E";
             [JsonPropertyName("scale_mode")] public string ScaleMode { get; set; } = "Major (Ionian)";
             [JsonPropertyName("auto_detect_key")] public bool AutoDetectKey { get; set; } = true;
+            [JsonPropertyName("show_circle_of_fifths")] public bool ShowCircleOfFifths { get; set; } = false;
         }
 
         // ── Trackbar ↔ _smoothedMaxIntensity conversion ─────────────────────
@@ -226,6 +227,7 @@ namespace Spectrum
                 if (modeIdx >= 0) cmbScaleMode.SelectedIndex = modeIdx;
             }
             cbAutoKey.Checked = s.AutoDetectKey;
+            cbShowCircle.Checked = s.ShowCircleOfFifths;
         }
 
         private void SaveSettings()
@@ -292,6 +294,7 @@ namespace Spectrum
                     ScaleRoot = cmbScaleRoot.SelectedItem?.ToString() ?? "",
                     ScaleMode = cmbScaleMode.SelectedItem?.ToString() ?? "",
                     AutoDetectKey = cbAutoKey.Checked,
+                    ShowCircleOfFifths = cbShowCircle.Checked,
                 };
 
                 Directory.CreateDirectory(Path.GetDirectoryName(SettingsPath)!);

@@ -16,14 +16,14 @@ namespace Spectrum
 
         private double KEY_EMA_SECONDS = 20.0;
         private double KEY_MODE_BIAS = 0.75;
-        
+
         /// <summary>
         /// Fraction by which a ridge's key-EMA contribution is reduced when it
         /// appears to be a harmonic overtone of a stronger ridge.  0 = no
         /// suppression; 1 = full suppression.
         /// </summary>
         private double KEY_HARMONIC_SUPPRESSION = 0.5;
-        
+
         /// <summary>
         /// Weight of the coverage-confidence term in the final composite score.
         /// 0 = pure Pearson/KK correlation; 1 = pure coverage.
@@ -408,6 +408,9 @@ namespace Spectrum
             _pendingCanonicalNotes = canonical;
             _pendingDetectedNotes = detected;
             _pendingHarmonicsDisplay = harm;
+
+            // Keep Circle of Fifths state in sync.
+            UpdateCircleOfFifths(text);
 
             if (!IsDisposed && IsHandleCreated && UiThrottleReady(ref _lastChordTick))
             {

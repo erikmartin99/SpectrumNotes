@@ -1388,6 +1388,7 @@ namespace Spectrum
             SetChordLabelUi("―");
             DrawPbKey();
             InitScaleDropdowns();
+            InitCircleOfFifths();
         }
 
         private void DrawPbKey()
@@ -3998,6 +3999,12 @@ namespace Spectrum
 
         private void Pic_Paint(object sender, PaintEventArgs e)
         {
+
+            if (cbShowCircle.Checked)
+            {
+                DrawCircleOfFifths(e.Graphics, pic.Width, pic.Height);
+                return;
+            }
             lock (bitmapLock)
             {
                 if (spectrogramBitmap != null)

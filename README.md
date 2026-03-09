@@ -33,3 +33,8 @@ Run the Windows installer from the latest GitHub release. (See the "releases" li
 ## Contributing
 
 [Fork the repo, open a Pull Request, and send me an email](https://github.com/erikmartin99/SpectrumNotes)
+
+## Other
+
+If you were looking for my youtube page, click here: [videos.erikmartin.com](https://videos.erikmartin.com/)
+

@@ -3490,6 +3490,8 @@ namespace Spectrum
                 lastDetectedChordText = "—";
                 lastDetectedNotesText = "";
                 lastDetectedHarmonicsText = "";
+                _lastChordRoot = -1;
+                _lastChordQi = -1;
                 if (!scrollPaused) SetChordLabelUi("—", "");
                 DrawTuner();
                 UpdateHarmonicsDisplay();
@@ -3821,6 +3823,58 @@ namespace Spectrum
         private const double ChordNoteThreshold = 0.10;
         private const double ChordNoteThresholdLow = 0.05;
 
+        /// <summary>
+        /// Returns a score bonus for a chord candidate based on the currently
+        /// detected (or manually selected) key.  If the candidate is a major triad
+        /// (or major-family chord) whose root+minor-third IS diatonic to the key
+        /// but whose root+major-third is NOT, a strong bias is added to the
+        /// equivalent minor interpretation instead.  This prevents G major being
+        /// wrongly preferred over G minor when the key context (e.g. Bb major or
+        /// G minor) makes the major reading impossible.
+        /// </summary>
+        private double KeyContextChordBias(int root, int qi)
+        {
+            // Only apply when a key is established
+            if (_hysteresisRoot < 0 || _hysteresisMode < 0) return 0.0;
+
+            int keyRoot = _hysteresisRoot;
+            var keyIntervals = _modeIntervals[_hysteresisMode];
+
+            // Build set of diatonic pitch classes for the current key
+            var diatonic = new bool[12];
+            foreach (int iv in keyIntervals) diatonic[(keyRoot + iv) % 12] = true;
+
+            ref readonly var q = ref ChordQualities[qi];
+
+            // Determine if this quality has a major third (interval 4) or minor third (interval 3)
+            bool hasMajorThird = false, hasMinorThird = false;
+            foreach (int iv in q.Intervals)
+            {
+                if (iv == 4) hasMajorThird = true;
+                if (iv == 3) hasMinorThird = true;
+            }
+
+            if (!hasMajorThird && !hasMinorThird) return 0.0;
+
+            int majorThirdPc = (root + 4) % 12;
+            int minorThirdPc = (root + 3) % 12;
+
+            bool majorThirdDiatonic = diatonic[majorThirdPc];
+            bool minorThirdDiatonic = diatonic[minorThirdPc];
+
+            // Minor is diatonic, major is not → bias toward minor quality
+            if (hasMinorThird && minorThirdDiatonic && !majorThirdDiatonic)
+                return CHORD_KEY_CONTEXT_BIAS;
+
+            // Major is diatonic, minor is not → bias toward major quality
+            if (hasMajorThird && majorThirdDiatonic && !minorThirdDiatonic)
+                return CHORD_KEY_CONTEXT_BIAS;
+
+            return 0.0;
+        }
+
+        private const double CHORD_KEY_CONTEXT_BIAS = 0.36;
+
         private double ScoreCandidate(
             Span<double> c, int root,
             in (string Suffix, int[] Intervals, int ThirdOffset, bool HasThird) q,
@@ -3886,6 +3940,7 @@ namespace Spectrum
                     ref readonly var q = ref ChordQualities[qi];
                     double score = ScoreCandidate(c, root, q, ChordNoteThreshold);
                     if (score > double.NegativeInfinity) anyMatch = true;
+                    score += KeyContextChordBias(root, qi);
                     if (score > bestScore) { bestScore = score; bestRoot = root; bestQi = qi; }
                 }
             }
@@ -3907,6 +3962,7 @@ namespace Spectrum
                     ref readonly var q = ref ChordQualities[qi];
                     double score = ScoreCandidate(c, root, q, ChordNoteThresholdLow);
                     if (score > double.NegativeInfinity) anyMatchLow = true;
+                    score += KeyContextChordBias(root, qi);
                     if (score > bestScore) { bestScore = score; bestRoot = root; bestQi = qi; }
                 }
             }
@@ -3917,10 +3973,73 @@ namespace Spectrum
             // AND Pass 2 found something richer. A valid triad (3+ notes) at 10% locks
             // out any relaxed-threshold upgrade.
             if (anyMatch && (strictLen >= 3 || ChordQualities[bestQi].Intervals.Length <= strictLen))
-                return BuildResult(bestRootStrict, bestQiStrict);
+            { bestRoot = bestRootStrict; bestQi = bestQiStrict; }
 
+            // Chord label hysteresis: suppress flickering between extensions/variants
+            // of the same chord (e.g. Cmaj vs Cmaj7 vs Csus2) by requiring the new
+            // winner to beat the second-best score by a meaningful margin, AND by
+            // preferring the currently-displayed chord when it ties with a variant.
+            if (_lastChordRoot >= 0)
+            {
+                bool sameCore = bestRoot == _lastChordRoot &&
+                                ChordCoreQuality(bestQi) == ChordCoreQuality(_lastChordQi);
+
+                if (sameCore)
+                {
+                    // Same root + family: only upgrade to a richer extension if it
+                    // clearly outscore the current displayed quality right now.
+                    double currentScore = ScoreCandidate(c, _lastChordRoot,
+                        ChordQualities[_lastChordQi], ChordNoteThresholdLow)
+                        + KeyContextChordBias(_lastChordRoot, _lastChordQi);
+                    if (bestScore < currentScore + CHORD_HYSTERESIS_EXTENSION)
+                        return BuildResult(_lastChordRoot, _lastChordQi);
+                }
+                else
+                {
+                    // Different chord: re-score the currently displayed chord and
+                    // require the challenger to beat it by a clear margin.
+                    double currentScore = ScoreCandidate(c, _lastChordRoot,
+                        ChordQualities[_lastChordQi], ChordNoteThresholdLow)
+                        + KeyContextChordBias(_lastChordRoot, _lastChordQi);
+                    if (bestScore < currentScore + CHORD_HYSTERESIS_CHANGE)
+                        return BuildResult(_lastChordRoot, _lastChordQi);
+                }
+            }
+
+            _lastChordRoot = bestRoot;
+            _lastChordQi = bestQi;
             return BuildResult(bestRoot, bestQi);
         }
+
+        // Maps a chord quality index to a coarse category so that e.g. maj/maj7/maj9
+        // are all treated as the same "major" family for hysteresis purposes.
+        private static int ChordCoreQuality(int qi)
+        {
+            if (qi < 0) return -1;
+            ref readonly var q = ref ChordQualities[qi];
+            bool hasMaj3 = false, hasMin3 = false, hasDim5 = false, hasAug5 = false, hasSus = false;
+            foreach (int iv in q.Intervals)
+            {
+                if (iv == 4) hasMaj3 = true;
+                if (iv == 3) hasMin3 = true;
+                if (iv == 6) hasDim5 = true;
+                if (iv == 8) hasAug5 = true;
+                if (iv == 2 || iv == 5) hasSus = true;
+            }
+            if (hasSus && !hasMaj3 && !hasMin3) return 4; // sus family
+            if (hasDim5 && hasMin3) return 3;              // dim family
+            if (hasAug5 && hasMaj3) return 2;              // aug family
+            if (hasMin3) return 1;                         // minor family
+            return 0;                                      // major family
+        }
+
+        private int _lastChordRoot = -1;
+        private int _lastChordQi = -1;
+
+        // Margin required to switch to a richer extension of the same root+quality.
+        private const double CHORD_HYSTERESIS_EXTENSION = 0.04;
+        // Margin required to switch to a genuinely different chord.
+        private const double CHORD_HYSTERESIS_CHANGE = 0.08;
 
         private string BuildCanonical(int rootPc, int qi)
         {

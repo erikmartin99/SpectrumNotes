@@ -28,7 +28,26 @@ namespace Spectrum
         /// Weight of the coverage-confidence term in the final composite score.
         /// 0 = pure Pearson/KK correlation; 1 = pure coverage.
         /// </summary>
-        private double KEY_COVERAGE_WEIGHT = 0.35;
+        private double KEY_COVERAGE_WEIGHT = 0.55;
+
+        /// <summary>
+        /// Score bonus added to the current key candidate each detection cycle.
+        /// A challenger must outscore the current key by at least this margin to
+        /// trigger a switch. Prevents momentary chords (e.g. D in a C-G-D
+        /// progression) from flipping the detected key. ~0.05–0.10 is a good range.
+        /// </summary>
+        private double KEY_HYSTERESIS = 0.05;
+
+        /// <summary>
+        /// Maximum peak-bin share of total EMA energy at which key detection is
+        /// suppressed (returns "no key"). A single chord peaks at ~0.35–0.45 since
+        /// 3 notes dominate; after several chords the spread drops below ~0.25.
+        /// Set to 0 to disable the gate entirely.
+        /// </summary>
+        private double KEY_MIN_CONFIDENCE = 0.30;
+
+        private int _hysteresisRoot = -1;
+        private int _hysteresisMode = -1;
 
         private readonly double[] _keyEma = new double[12];
 
@@ -206,6 +225,8 @@ namespace Spectrum
         private void ResetKeyEma()
         {
             lock (chordLock) { Array.Clear(_keyEma, 0, 12); }
+            _hysteresisRoot = -1;
+            _hysteresisMode = -1;
         }
 
         private (int rootComboIndex, int modeComboIndex) DetectKey()
@@ -216,6 +237,16 @@ namespace Spectrum
             double totalEnergy = 0.0;
             for (int i = 0; i < 12; i++) totalEnergy += snap[i];
             if (totalEnergy < 1e-9) return (0, 0);
+
+            // Don't commit to a key until the EMA has accumulated enough evidence.
+            // A single chord produces a peaked but thin EMA; after several chords
+            // the max/mean ratio becomes more reliable. Gate on the peak bin's
+            // share: if the strongest pitch class dominates too heavily, we haven't
+            // seen enough variety to disambiguate keys that share most of their notes.
+            double maxBin = 0.0;
+            for (int i = 0; i < 12; i++) if (snap[i] > maxBin) maxBin = snap[i];
+            double peakShare = maxBin / totalEnergy;  // 1/12 = flat, 1.0 = single note
+            if (peakShare > KEY_MIN_CONFIDENCE) return (0, 0);
 
             // Normalize for Pearson correlation (zero-mean, unit-length)
             double[] snapNorm = new double[12];
@@ -244,6 +275,11 @@ namespace Spectrum
                     double coverage = CoverageScore(snapRaw, root, mi);
                     double score = (1.0 - coverageWt) * pearson + coverageWt * coverage;
 
+                    // Hysteresis: give the current key a bonus so a challenger must
+                    // clearly outscore it, not just edge it out on a momentary chord.
+                    if (root == _hysteresisRoot && mi == _hysteresisMode)
+                        score += KEY_HYSTERESIS;
+
                     // Bias toward Major and Natural Minor
                     if (mi == 0 || mi == 5)
                         score += bias * (1.0 - score) * 0.5;
@@ -258,6 +294,9 @@ namespace Spectrum
                     }
                 }
             }
+
+            _hysteresisRoot = bestRoot;
+            _hysteresisMode = bestMode;
 
             // For diatonic modes, remap to major if characteristic note is absent
             if (bestMode != 0 && bestMode != 5 &&
@@ -315,7 +354,16 @@ namespace Spectrum
         /// </summary>
         private static double CoverageScore(double[] snapRaw, int root, int modeIndex)
         {
-            const double OUT_PENALTY = 0.6;
+            // Nonlinear (squared) out-of-scale penalty: notes with substantial
+            // accumulated EMA energy are penalized quadratically, so a tone that
+            // appears consistently (e.g. F# from repeated D chords) hurts much more
+            // than a trace/passing note (e.g. F# lingering briefly from one chord).
+            // This lets the long-term EMA correctly identify the key even when both
+            // the key-confirming and key-excluding notes are present in the mix.
+            //
+            // At e=0.04 (trace):    out contribution ≈ 0.05
+            // At e=0.12 (real):     out contribution ≈ 0.23
+            // At e=0.20 (dominant): out contribution ≈ 0.52
 
             var intervals = _modeIntervals[modeIndex];
             var inSet = new bool[12];
@@ -327,13 +375,14 @@ namespace Spectrum
             double outScore = 0.0;
             for (int pc = 0; pc < 12; pc++)
             {
+                double e = snapRaw[pc];
                 if (inSet[pc])
-                    inScore += snapRaw[pc] > threshold ? snapRaw[pc] : snapRaw[pc] * 0.5;
+                    inScore += e > threshold ? e : e * 0.5;
                 else
-                    outScore += snapRaw[pc];
+                    outScore += e + 8.0 * e * e;
             }
 
-            return inScore - OUT_PENALTY * outScore;
+            return inScore - outScore;
         }
 
         private static double ScoreKeyCandidate(double[] snapNorm, int root, int modeIndex)

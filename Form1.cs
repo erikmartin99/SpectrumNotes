@@ -699,7 +699,7 @@ namespace Spectrum
                 ApplyInt(tbChordRidges, ref CHORD_RIDGES, min: 0, max: 15);
 
             tbKeyEmaSeconds.Leave += (_, __) =>
-                ApplyDouble(tbKeyEmaSeconds, ref KEY_EMA_SECONDS, min: 0.5, max: 600.0);
+                ApplyDouble(tbKeyEmaSeconds, ref KEY_HOLD_DECAY_SECONDS, min: 1.0, max: 300.0);
 
             tbRidgeMatchLogHz.Leave += (_, __) =>
                 ApplyDouble(tbRidgeMatchLogHz, ref RIDGE_MATCH_LOGHZ, min: 0.001, max: 1.0);
@@ -1347,7 +1347,7 @@ namespace Spectrum
             tbChordAvgFrames.Text = CHORD_AVG_FRAMES.ToString(CultureInfo.InvariantCulture);
             tbChordOutPenalty.Text = CHORD_OUT_PENALTY.ToString("0.########", CultureInfo.InvariantCulture);
             tbChordRidges.Text = CHORD_RIDGES.ToString("0", CultureInfo.InvariantCulture);
-            tbKeyEmaSeconds.Text = KEY_EMA_SECONDS.ToString("0.##", CultureInfo.InvariantCulture);
+            tbKeyEmaSeconds.Text = KEY_HOLD_DECAY_SECONDS.ToString("0.##", CultureInfo.InvariantCulture);
             tbtuning.Text = tuning.ToString("0.########", CultureInfo.InvariantCulture);
             tbHighPass.Text = HighPassNote;
             tbLowPass.Text = LowPassNote;
@@ -3500,7 +3500,7 @@ namespace Spectrum
 
             for (int i = 0; i < 12; i++) chroma[i] /= total;
 
-            if (!scrollPaused) UpdateKeyEmaFromRidges();
+            if (!scrollPaused) UpdateKeyMaxHoldFromRidges();
 
             string notesInstant = ChordNotesText(chroma);
             lastDetectedNotesText = notesInstant;
@@ -3862,18 +3862,26 @@ namespace Spectrum
             bool majorThirdDiatonic = diatonic[majorThirdPc];
             bool minorThirdDiatonic = diatonic[minorThirdPc];
 
+            // Scale the bias by key confidence (margin between best and second-best key
+            // score).  When the key is ambiguous (e.g. relative major/minor toss-up,
+            // confidence ~0.02) the bias shrinks toward zero so we don't enforce a
+            // diatonic interpretation we're not sure about.  A short ramp over [0, 0.08]
+            // means full bias kicks in once the margin is comfortably clear.
+            double confidenceScale = Math.Clamp(_keyConfidence / 0.08, 0.0, 1.0);
+            double bias = CHORD_KEY_CONTEXT_BIAS * confidenceScale;
+
             // Minor is diatonic, major is not → bias toward minor quality
             if (hasMinorThird && minorThirdDiatonic && !majorThirdDiatonic)
-                return CHORD_KEY_CONTEXT_BIAS;
+                return bias;
 
             // Major is diatonic, minor is not → bias toward major quality
             if (hasMajorThird && majorThirdDiatonic && !minorThirdDiatonic)
-                return CHORD_KEY_CONTEXT_BIAS;
+                return bias;
 
             return 0.0;
         }
 
-        private const double CHORD_KEY_CONTEXT_BIAS = 0.36;
+        private const double CHORD_KEY_CONTEXT_BIAS = 0.60;
 
         private double ScoreCandidate(
             Span<double> c, int root,

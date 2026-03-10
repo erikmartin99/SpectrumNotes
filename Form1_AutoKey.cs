@@ -1,5 +1,10 @@
 //Copyright (c) 2026, Erik Martin
-// Auto key/mode detection using ridge-weighted long-term EMA chroma profile.
+// Auto key/mode detection using ridge-weighted max-hold chroma profile with
+// out-of-key invalidation.  The accumulator holds the running maximum intensity
+// seen for each pitch class (never decays on its own).  When a strong ridge
+// lands on a pitch class that is out of the current best key, the accumulator
+// is immediately seeded from the current frame only, so key changes are tracked
+// quickly while stable keys are held indefinitely.
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +19,6 @@ namespace Spectrum
             InitDiatonicRemap();
         }
 
-        private double KEY_EMA_SECONDS = 20.0;
         private double KEY_MODE_BIAS = 0.75;
 
         /// <summary>
@@ -27,19 +31,22 @@ namespace Spectrum
         /// <summary>
         /// Weight of the coverage-confidence term in the final composite score.
         /// 0 = pure Pearson/KK correlation; 1 = pure coverage.
+        /// Keep this low — coverage is identical for relative key pairs (same 7 notes),
+        /// so a high value dilutes the KK signal that actually distinguishes C major
+        /// from A minor. 0.20–0.30 is the useful range.
         /// </summary>
-        private double KEY_COVERAGE_WEIGHT = 0.55;
+        private double KEY_COVERAGE_WEIGHT = 0.25;
 
         /// <summary>
         /// Score bonus added to the current key candidate each detection cycle.
         /// A challenger must outscore the current key by at least this margin to
-        /// trigger a switch. Prevents momentary chords (e.g. D in a C-G-D
-        /// progression) from flipping the detected key. ~0.05–0.10 is a good range.
+        /// trigger a switch. Relative key pairs score very similarly, so this needs
+        /// to be large enough to suppress those flips. 0.10–0.20 is the useful range.
         /// </summary>
-        private double KEY_HYSTERESIS = 0.05;
+        private double KEY_HYSTERESIS = 0.15;
 
         /// <summary>
-        /// Maximum peak-bin share of total EMA energy at which key detection is
+        /// Maximum peak-bin share of total max-hold energy at which key detection is
         /// suppressed (returns "no key"). A single chord peaks at ~0.35–0.45 since
         /// 3 notes dominate; after several chords the spread drops below ~0.25.
         /// Set to 0 to disable the gate entirely.
@@ -48,8 +55,28 @@ namespace Spectrum
 
         private int _hysteresisRoot = -1;
         private int _hysteresisMode = -1;
+        // Margin between best and second-best key score (0 = ambiguous, ~0.2+ = confident).
+        // Scaled by KeyContextChordBias to suppress diatonic quality biasing when uncertain.
+        private double _keyConfidence = 0.0;
 
-        private readonly double[] _keyEma = new double[12];
+        /// <summary>
+        /// Half-life in seconds for the leaky max-hold decay.  Each bin falls
+        /// toward zero at this rate when no energy is being added.  20 s keeps a
+        /// key stable across a full verse; lower (e.g. 8 s) tracks modulations
+        /// faster at the cost of more jitter on sparse passages.
+        /// </summary>
+        private double KEY_HOLD_DECAY_SECONDS = 20.0;
+
+        /// <summary>
+        /// Minimum normalised per-frame pitch-class energy for an out-of-key note
+        /// to trigger an accumulator reset.  A value of 0.40 means the out-of-key
+        /// note must be carrying ~40% of the total frame energy — i.e. it must be
+        /// the clearly dominant note, not a passing tone or harmonic.  Useful range
+        /// is roughly 0.25 (sensitive) to 0.60 (only hard pivots trigger).
+        /// </summary>
+        private double KEY_INVALIDATION_THRESHOLD = 0.40;
+
+        private readonly double[] _keyMaxHold = new double[12];  // leaky max-hold per PC
 
         private struct KeyRidgeEntry { public double Hz; public double W; }
         private KeyRidgeEntry[] _keyRidgeScratch = new KeyRidgeEntry[MaxActiveRidges];
@@ -106,7 +133,7 @@ namespace Spectrum
             }
         }
 
-        private void UpdateKeyEmaFromRidges()
+        private void UpdateKeyMaxHoldFromRidges()
         {
             _keyRidgeScratchCount = 0;
             lock (ridgeLock)
@@ -199,32 +226,103 @@ namespace Spectrum
 
             if (totalW < 1e-9) return;
 
+            // ── Build this frame's normalised pitch-class vector ──────────────
             for (int i = 0; i < 12; i++) pcAccum[i] /= totalW;
 
-            double alpha = KeyEmaAlpha;
+            // ── Leaky max-hold update ─────────────────────────────────────────
+            // Step 1: decay the hold toward zero, then raise each bin to the
+            // current frame value if it exceeds the decayed hold.  This means a
+            // bin rises instantly when a note is played but falls exponentially
+            // once the note stops — unlike pure EMA (which averages strong notes
+            // down) or pure max-hold (which never forgets passing tones).
+            //
+            // Step 2: out-of-key invalidation.  After updating the hold, score
+            // it against all key candidates.  If any current-frame PC that is
+            // out of the best key carries substantial energy, wipe the hold and
+            // reseed from this frame alone so the detector pivots immediately.
+
+            double fps = TARGET_FPS > 1.0 ? TARGET_FPS : 60.0;
+            double halfLifeFrames = KEY_HOLD_DECAY_SECONDS * fps;
+            double decayPerFrame = halfLifeFrames > 0.5
+                ? Math.Pow(0.5, 1.0 / halfLifeFrames)
+                : 0.0;
+
+            double[] snapForScore = new double[12];
+
             lock (chordLock)
             {
+                // Decay then raise.
                 for (int i = 0; i < 12; i++)
-                    _keyEma[i] = alpha * pcAccum[i] + (1.0 - alpha) * _keyEma[i];
+                {
+                    _keyMaxHold[i] *= decayPerFrame;
+                    if (pcAccum[i] > _keyMaxHold[i]) _keyMaxHold[i] = pcAccum[i];
+                }
+                Array.Copy(_keyMaxHold, snapForScore, 12);
             }
-        }
 
-        [Obsolete("Use UpdateKeyEmaFromRidges() instead")]
-        private void UpdateKeyEma(double[] chroma) { }
+            // Score the updated hold to find the current best key.
+            double holdTotal = 0.0;
+            for (int i = 0; i < 12; i++) holdTotal += snapForScore[i];
 
-        private double KeyEmaAlpha
-        {
-            get
+            if (holdTotal > 1e-9)
             {
-                double fps = TARGET_FPS > 1.0 ? TARGET_FPS : 60.0;
-                double halfLifeFrames = KEY_EMA_SECONDS * fps;
-                return halfLifeFrames > 0.5 ? 1.0 - Math.Pow(0.5, 1.0 / halfLifeFrames) : 1.0;
+                double mean = holdTotal / 12.0;
+                double norm = 0.0;
+                double[] snapNorm = new double[12];
+                for (int i = 0; i < 12; i++) { double v = snapForScore[i] / holdTotal - mean / holdTotal; norm += v * v; }
+                norm = Math.Sqrt(norm);
+
+                if (norm > 1e-9)
+                {
+                    for (int i = 0; i < 12; i++)
+                        snapNorm[i] = (snapForScore[i] / holdTotal - mean / holdTotal) / norm;
+
+                    double bestScore = double.NegativeInfinity;
+                    int bestRoot = 0, bestMode = 0;
+                    for (int root = 0; root < 12; root++)
+                        for (int mi = 0; mi < _modeIntervals.Length; mi++)
+                        {
+                            double s = ScoreKeyCandidate(snapNorm, root, mi);
+                            if (s > bestScore) { bestScore = s; bestRoot = root; bestMode = mi; }
+                        }
+
+                    // Build the in-key set for the best candidate.
+                    var inKey = new bool[12];
+                    foreach (int iv in _modeIntervals[bestMode])
+                        inKey[(bestRoot + iv) % 12] = true;
+
+                    // Invalidate if any strong current-frame PC is out of key.
+                    double thresh = KEY_INVALIDATION_THRESHOLD;
+                    bool doReset = false;
+                    for (int pc = 0; pc < 12; pc++)
+                    {
+                        if (!inKey[pc] && pcAccum[pc] > thresh)
+                        {
+                            doReset = true;
+                            break;
+                        }
+                    }
+
+                    if (doReset)
+                    {
+                        lock (chordLock)
+                        {
+                            // Reseed from this frame only — instant pivot to new key.
+                            for (int i = 0; i < 12; i++) _keyMaxHold[i] = pcAccum[i];
+                        }
+                        _hysteresisRoot = -1;
+                        _hysteresisMode = -1;
+                    }
+                }
             }
         }
+
+        [Obsolete("Use UpdateKeyMaxHoldFromRidges() instead")]
+        private void UpdateKeyEma(double[] chroma) { }
 
         private void ResetKeyEma()
         {
-            lock (chordLock) { Array.Clear(_keyEma, 0, 12); }
+            lock (chordLock) { Array.Clear(_keyMaxHold, 0, 12); }
             _hysteresisRoot = -1;
             _hysteresisMode = -1;
         }
@@ -232,17 +330,17 @@ namespace Spectrum
         private (int rootComboIndex, int modeComboIndex) DetectKey()
         {
             double[] snap = new double[12];
-            lock (chordLock) { Array.Copy(_keyEma, snap, 12); }
+            lock (chordLock) { Array.Copy(_keyMaxHold, snap, 12); }
 
             double totalEnergy = 0.0;
             for (int i = 0; i < 12; i++) totalEnergy += snap[i];
             if (totalEnergy < 1e-9) return (0, 0);
 
-            // Don't commit to a key until the EMA has accumulated enough evidence.
-            // A single chord produces a peaked but thin EMA; after several chords
-            // the max/mean ratio becomes more reliable. Gate on the peak bin's
-            // share: if the strongest pitch class dominates too heavily, we haven't
-            // seen enough variety to disambiguate keys that share most of their notes.
+            // Don't commit to a key until the max-hold has accumulated enough evidence.
+            // A single chord produces a peaked but narrow profile; after several chords
+            // the spread widens. Gate on the peak bin's share: if the strongest pitch
+            // class dominates too heavily we haven't seen enough variety to disambiguate
+            // keys that share most of their notes.
             double maxBin = 0.0;
             for (int i = 0; i < 12; i++) if (snap[i] > maxBin) maxBin = snap[i];
             double peakShare = maxBin / totalEnergy;  // 1/12 = flat, 1.0 = single note
@@ -260,7 +358,9 @@ namespace Spectrum
             double[] snapRaw = new double[12];
             for (int i = 0; i < 12; i++) snapRaw[i] = snap[i] / totalEnergy;
 
-            double bestScore = double.NegativeInfinity;
+            double bestScore = double.NegativeInfinity;     // pre-hysteresis, for confidence
+            double secondScore = double.NegativeInfinity;    // pre-hysteresis, for confidence
+            double bestScoreH = double.NegativeInfinity;     // post-hysteresis, for winner
             int bestRoot = 0;
             int bestMode = 0;
 
@@ -275,25 +375,33 @@ namespace Spectrum
                     double coverage = CoverageScore(snapRaw, root, mi);
                     double score = (1.0 - coverageWt) * pearson + coverageWt * coverage;
 
-                    // Hysteresis: give the current key a bonus so a challenger must
-                    // clearly outscore it, not just edge it out on a momentary chord.
-                    if (root == _hysteresisRoot && mi == _hysteresisMode)
-                        score += KEY_HYSTERESIS;
-
                     // Bias toward Major and Natural Minor
                     if (mi == 0 || mi == 5)
                         score += bias * (1.0 - score) * 0.5;
                     else if (mi == 9 || mi == 10 || mi == 11)
                         score += bias * 0.25 * (1.0 - score) * 0.5;
 
-                    if (score > bestScore)
+                    // Track top two pre-hysteresis scores for the confidence margin.
+                    if (score > bestScore) { secondScore = bestScore; bestScore = score; }
+                    else if (score > secondScore) { secondScore = score; }
+
+                    // Hysteresis bonus applied only for winner selection.
+                    double scoreH = score;
+                    if (root == _hysteresisRoot && mi == _hysteresisMode)
+                        scoreH += KEY_HYSTERESIS;
+
+                    if (scoreH > bestScoreH)
                     {
-                        bestScore = score;
+                        bestScoreH = scoreH;
                         bestRoot = root;
                         bestMode = mi;
                     }
                 }
             }
+
+            // Confidence = margin between best and second-best (pre-hysteresis).
+            // ~0.05 = near-tie (e.g. relative key pair); ~0.15+ = clear key.
+            _keyConfidence = Math.Clamp(bestScore - secondScore, 0.0, 1.0);
 
             _hysteresisRoot = bestRoot;
             _hysteresisMode = bestMode;

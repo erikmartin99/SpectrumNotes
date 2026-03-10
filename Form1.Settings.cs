@@ -183,7 +183,7 @@ namespace Spectrum
             CHORD_AVG_FRAMES = Math.Clamp(s.ChordAvgFrames, 1, 120);
             CHORD_OUT_PENALTY = Math.Clamp(s.ChordOutPenalty, 0.0, 10.0);
             CHORD_RIDGES = Math.Clamp(s.ChordRidges, 0, 15);
-            KEY_EMA_SECONDS = Math.Clamp(s.KeyEmaSeconds, 0.5, 600.0);
+            //KEY_EMA_SECONDS = Math.Clamp(s.KeyEmaSeconds, 0.5, 600.0);
             KEY_MODE_BIAS = Math.Clamp(s.KeyModeBias, 0.0, 1.0);
 
             if (TryParseNoteToMidi(s.HighPassNote, out int hpMidi))
@@ -277,7 +277,7 @@ namespace Spectrum
                     ChordAvgFrames = CHORD_AVG_FRAMES,
                     ChordOutPenalty = CHORD_OUT_PENALTY,
                     ChordRidges = CHORD_RIDGES,
-                    KeyEmaSeconds = KEY_EMA_SECONDS,
+    //                KeyEmaSeconds = KEY_EMA_SECONDS,
                     KeyModeBias = KEY_MODE_BIAS,
 
                     HighPassNote = HighPassNote,

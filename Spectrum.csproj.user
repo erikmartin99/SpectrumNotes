@@ -13,9 +13,6 @@
     <Compile Update="Form1_AutoKey.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="Form1_CircleOfFifths.cs">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Update="Form1_ParamHintReg.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -378,67 +378,67 @@ namespace Spectrum
         private readonly double[] _chromaNorm = new double[12];
 
         // ── Chord qualities ──────────────────────────────────────────────────
-        private static readonly (string Suffix, int[] Intervals, int ThirdOffset, bool HasThird, double ObscurityPenalty)[]
+        private static readonly (string Suffix, int[] Intervals, int ThirdOffset, bool HasThird)[]
             ChordQualities =
             {
                 // ── Triads ──────────────────────────────────────────────────
-                ("maj",      new[]{0,4,7},          4,  true, 0.00),
-                ("maj(no5)",      new[]{0,4},          4,  true, 0.08),
-                ("m",        new[]{0,3,7},          3,  true, 0.00),
-                ("m(no5)",        new[]{0,3},          3,  true, 0.08),
-                ("dim",      new[]{0,3,6},          3,  true, 0.05),
-                ("aug",      new[]{0,4,8},          4,  true, 0.10),
-                ("sus2",     new[]{0,2,7},          2,  false, 0.05),
-                ("sus4",     new[]{0,5,7},          5,  false, 0.05),
-                ("",         new[]{0,7},            -1, false, 0.10),
+                ("maj",      new[]{0,4,7},          4,  true),
+                ("maj(no5)",      new[]{0,4},          4,  true),
+                ("m",        new[]{0,3,7},          3,  true),
+                ("m(no5)",        new[]{0,3},          3,  true),
+                ("dim",      new[]{0,3,6},          3,  true),
+                ("aug",      new[]{0,4,8},          4,  true),
+                ("sus2",     new[]{0,2,7},          2,  false),
+                ("sus4",     new[]{0,5,7},          5,  false),
+                ("",         new[]{0,7},            -1, false),
 
                 // ── Dominant / Dominant-extended ────────────────────────────
-                ("7",        new[]{0,4,7,10},       4,  true, 0.00),
-                ("7(no5)",        new[]{0,4,10},       4,  true, 0.08),
-                ("9",        new[]{0,4,7,10,2},     4,  true, 0.08),
-                ("9(no5)",        new[]{0,4,10,2},     4,  true, 0.15),
-                ("11",       new[]{0,4,7,10,2,5},   4,  true, 0.20),
-                ("13",       new[]{0,4,7,10,9},     4,  true, 0.15),
-                ("7sus4",    new[]{0,5,7,10},       5,  false, 0.08),
-                ("7sus2",    new[]{0,2,7,10},       2,  false, 0.12),
+                ("7",        new[]{0,4,7,10},       4,  true),
+                ("7(no5)",        new[]{0,4,10},       4,  true),
+                ("9",        new[]{0,4,7,10,2},     4,  true),
+                ("9(no5)",        new[]{0,4,10,2},     4,  true),
+                ("11",       new[]{0,4,7,10,2,5},   4,  true),
+                ("13",       new[]{0,4,7,10,9},     4,  true),
+                ("7sus4",    new[]{0,5,7,10},       5,  false),
+                ("7sus2",    new[]{0,2,7,10},       2,  false),
 
                 // ── Major seventh family ─────────────────────────────────────
-                ("maj7",     new[]{0,4,7,11},       4,  true, 0.00),
-                ("maj7(no5)", new[]{0,4,11},       4,  true, 0.10),
-                ("maj9",     new[]{0,4,7,11,2},     4,  true, 0.10),
-                ("maj9(no5)",     new[]{0,4,11,2},     4,  true, 0.18),
-                ("maj11",    new[]{0,4,7,11,2,5},   4,  true, 0.25),
-                ("maj13",    new[]{0,4,7,11,9},     4,  true, 0.20),
+                ("maj7",     new[]{0,4,7,11},       4,  true),
+                ("maj7(no5)", new[]{0,4,11},       4,  true),
+                ("maj9",     new[]{0,4,7,11,2},     4,  true),
+                ("maj9(no5)",     new[]{0,4,11,2},     4,  true),
+                ("maj11",    new[]{0,4,7,11,2,5},   4,  true),
+                ("maj13",    new[]{0,4,7,11,9},     4,  true),
 
                 // ── Minor seventh family ─────────────────────────────────────
-                ("m7",       new[]{0,3,7,10},       3,  true, 0.00),
-                ("m7(no5)",       new[]{0,3,10},       3,  true, 0.10),
-                ("m9",       new[]{0,3,7,10,2},     3,  true, 0.10),
-                ("m9(no5)",       new[]{0,3,10,2},     3,  true, 0.18),
-                ("m11",      new[]{0,3,7,10,2,5},   3,  true, 0.25),
-                ("m(maj7)",  new[]{0,3,7,11},       3,  true, 0.20),
-                ("m(maj9)",  new[]{0,3,7,11,2},     3,  true, 0.28),
+                ("m7",       new[]{0,3,7,10},       3,  true),
+                ("m7(no5)",       new[]{0,3,10},       3,  true),
+                ("m9",       new[]{0,3,7,10,2},     3,  true),
+                ("m9(no5)",       new[]{0,3,10,2},     3,  true),
+                ("m11",      new[]{0,3,7,10,2,5},   3,  true),
+                ("m(maj7)",  new[]{0,3,7,11},       3,  true),
+                ("m(maj9)",  new[]{0,3,7,11,2},     3,  true),
 
                 // ── Diminished / Half-diminished ─────────────────────────────
-                ("dim7",     new[]{0,3,6,9},        3,  true, 0.08),
-                ("m7b5",     new[]{0,3,6,10},       3,  true, 0.10),
+                ("dim7",     new[]{0,3,6,9},        3,  true),
+                ("m7b5",     new[]{0,3,6,10},       3,  true),
 
                 // ── Augmented seventh ────────────────────────────────────────
-                ("aug7",     new[]{0,4,8,10},       4,  true, 0.25),
-                ("augMaj7",  new[]{0,4,8,11},       4,  true, 0.30),
+                ("aug7",     new[]{0,4,8,10},       4,  true),
+                ("augMaj7",  new[]{0,4,8,11},       4,  true),
 
                 // ── Sixth chords ─────────────────────────────────────────────
                 
-                ("6",     new[]{0,4,7,9},        4,  true, 0.05),
-                ("6(no5)",     new[]{0,4,9},        4,  true, 0.12),
-                ("m6",     new[]{0,3,7,9},        3,  true, 0.08),
-                ("m6(no5)",     new[]{0,3,9},        3,  true, 0.15),
-                ("6/9",      new[]{0,4,7,9,2},      4,  true, 0.15),
+                ("6",     new[]{0,4,7,9},        4,  true),
+                ("6(no5)",     new[]{0,4,9},        4,  true),
+                ("m6",     new[]{0,3,7,9},        3,  true),
+                ("m6(no5)",     new[]{0,3,9},        3,  true),
+                ("6/9",      new[]{0,4,7,9,2},      4,  true),
 
                 // ── Add chords ───────────────────────────────────────────────
-                ("majAdd9",     new[]{0,2,4,7},        4,  true, 0.08),
-                ("mAdd9",    new[]{0,2,3,7},        3,  true, 0.10),
-                ("add4",     new[]{0,4,5,7},        4,  true, 0.15)
+                ("majAdd9",     new[]{0,2,4,7},        4,  true),
+                ("mAdd9",    new[]{0,2,3,7},        3,  true),
+                ("add4",     new[]{0,4,5,7},        4,  true),
             };
 
         // ────────────────────────────────────────────────────────────────────
@@ -699,7 +699,7 @@ namespace Spectrum
                 ApplyInt(tbChordRidges, ref CHORD_RIDGES, min: 0, max: 15);
 
             tbKeyEmaSeconds.Leave += (_, __) =>
-                ApplyDouble(tbKeyEmaSeconds, ref KEY_HOLD_DECAY_SECONDS, min: 1.0, max: 300.0);
+                ApplyDouble(tbKeyEmaSeconds, ref KEY_EMA_SECONDS, min: 0.5, max: 600.0);
 
             tbRidgeMatchLogHz.Leave += (_, __) =>
                 ApplyDouble(tbRidgeMatchLogHz, ref RIDGE_MATCH_LOGHZ, min: 0.001, max: 1.0);
@@ -1347,7 +1347,7 @@ namespace Spectrum
             tbChordAvgFrames.Text = CHORD_AVG_FRAMES.ToString(CultureInfo.InvariantCulture);
             tbChordOutPenalty.Text = CHORD_OUT_PENALTY.ToString("0.########", CultureInfo.InvariantCulture);
             tbChordRidges.Text = CHORD_RIDGES.ToString("0", CultureInfo.InvariantCulture);
-            tbKeyEmaSeconds.Text = KEY_HOLD_DECAY_SECONDS.ToString("0.##", CultureInfo.InvariantCulture);
+            tbKeyEmaSeconds.Text = KEY_EMA_SECONDS.ToString("0.##", CultureInfo.InvariantCulture);
             tbtuning.Text = tuning.ToString("0.########", CultureInfo.InvariantCulture);
             tbHighPass.Text = HighPassNote;
             tbLowPass.Text = LowPassNote;
@@ -1388,7 +1388,6 @@ namespace Spectrum
             SetChordLabelUi("―");
             DrawPbKey();
             InitScaleDropdowns();
-            InitCircleOfFifths();
         }
 
         private void DrawPbKey()
@@ -3490,8 +3489,6 @@ namespace Spectrum
                 lastDetectedChordText = "—";
                 lastDetectedNotesText = "";
                 lastDetectedHarmonicsText = "";
-                _lastChordRoot = -1;
-                _lastChordQi = -1;
                 if (!scrollPaused) SetChordLabelUi("—", "");
                 DrawTuner();
                 UpdateHarmonicsDisplay();
@@ -3500,7 +3497,7 @@ namespace Spectrum
 
             for (int i = 0; i < 12; i++) chroma[i] /= total;
 
-            if (!scrollPaused) UpdateKeyMaxHoldFromRidges();
+            if (!scrollPaused) UpdateKeyEmaFromRidges();
 
             string notesInstant = ChordNotesText(chroma);
             lastDetectedNotesText = notesInstant;
@@ -3823,70 +3820,9 @@ namespace Spectrum
         private const double ChordNoteThreshold = 0.10;
         private const double ChordNoteThresholdLow = 0.05;
 
-        /// <summary>
-        /// Returns a score bonus for a chord candidate based on the currently
-        /// detected (or manually selected) key.  If the candidate is a major triad
-        /// (or major-family chord) whose root+minor-third IS diatonic to the key
-        /// but whose root+major-third is NOT, a strong bias is added to the
-        /// equivalent minor interpretation instead.  This prevents G major being
-        /// wrongly preferred over G minor when the key context (e.g. Bb major or
-        /// G minor) makes the major reading impossible.
-        /// </summary>
-        private double KeyContextChordBias(int root, int qi)
-        {
-            // Only apply when a key is established
-            if (_hysteresisRoot < 0 || _hysteresisMode < 0) return 0.0;
-
-            int keyRoot = _hysteresisRoot;
-            var keyIntervals = _modeIntervals[_hysteresisMode];
-
-            // Build set of diatonic pitch classes for the current key
-            var diatonic = new bool[12];
-            foreach (int iv in keyIntervals) diatonic[(keyRoot + iv) % 12] = true;
-
-            ref readonly var q = ref ChordQualities[qi];
-
-            // Determine if this quality has a major third (interval 4) or minor third (interval 3)
-            bool hasMajorThird = false, hasMinorThird = false;
-            foreach (int iv in q.Intervals)
-            {
-                if (iv == 4) hasMajorThird = true;
-                if (iv == 3) hasMinorThird = true;
-            }
-
-            if (!hasMajorThird && !hasMinorThird) return 0.0;
-
-            int majorThirdPc = (root + 4) % 12;
-            int minorThirdPc = (root + 3) % 12;
-
-            bool majorThirdDiatonic = diatonic[majorThirdPc];
-            bool minorThirdDiatonic = diatonic[minorThirdPc];
-
-            // Scale the bias by key confidence (margin between best and second-best key
-            // score).  When the key is ambiguous (e.g. relative major/minor toss-up,
-            // confidence ~0.02) the bias shrinks toward zero so we don't enforce a
-            // diatonic interpretation we're not sure about.  A short ramp over [0, 0.08]
-            // means full bias kicks in once the margin is comfortably clear.
-            double confidenceScale = Math.Clamp(_keyConfidence / 0.08, 0.0, 1.0);
-            double bias = CHORD_KEY_CONTEXT_BIAS * confidenceScale;
-
-            // Minor is diatonic, major is not → bias toward minor quality
-            if (hasMinorThird && minorThirdDiatonic && !majorThirdDiatonic)
-                return bias;
-
-            // Do NOT bias toward major even if the major third is diatonic.
-            // Key context should only rescue a minor chord from being mis-labelled
-            // major, never the other way around.  When the audio has a strong minor
-            // third the scoring already penalises the major reading via wrongThirdPenalty.
-
-            return 0.0;
-        }
-
-        private const double CHORD_KEY_CONTEXT_BIAS = 0.60;
-
         private double ScoreCandidate(
             Span<double> c, int root,
-            in (string Suffix, int[] Intervals, int ThirdOffset, bool HasThird, double ObscurityPenalty) q,
+            in (string Suffix, int[] Intervals, int ThirdOffset, bool HasThird) q,
             double threshold)
         {
             for (int ki = 0; ki < q.Intervals.Length; ki++)
@@ -3913,16 +3849,10 @@ namespace Spectrum
             double thirdBonus = q.HasThird ? 0.25 * c[(root + q.ThirdOffset) % 12] : 0.0;
             double fifthBonus = 0.08 * c[(root + 7) % 12];
 
-            // Complexity penalty: scaled by how weakly the extra notes are present.
-            // Increased coefficient so extended chords require clear evidence.
             int extraNotes = q.Intervals.Length - 3;
             double complexityPenalty = extraNotes > 0
-                ? 0.04 * extraNotes * (1.0 - inChord / Math.Max(1e-6, q.Intervals.Length * threshold))
+                ? 0.015 * extraNotes * (1.0 - inChord / Math.Max(1e-6, q.Intervals.Length * threshold))
                 : 0.0;
-
-            // Obscurity penalty: flat deduction that a common chord does not pay.
-            // Rare/exotic chords must outscore common ones by this margin to win.
-            double obscurityPenalty = q.ObscurityPenalty;
 
             return inChord
                  - CHORD_OUT_PENALTY * outChord
@@ -3930,8 +3860,7 @@ namespace Spectrum
                  + rootBonus
                  + thirdBonus
                  + fifthBonus
-                 - complexityPenalty
-                 - obscurityPenalty;
+                 - complexityPenalty;
         }
 
         private (string Label, string Canonical) DetectChord(double[] chroma)
@@ -3956,7 +3885,6 @@ namespace Spectrum
                     ref readonly var q = ref ChordQualities[qi];
                     double score = ScoreCandidate(c, root, q, ChordNoteThreshold);
                     if (score > double.NegativeInfinity) anyMatch = true;
-                    score += KeyContextChordBias(root, qi);
                     if (score > bestScore) { bestScore = score; bestRoot = root; bestQi = qi; }
                 }
             }
@@ -3978,7 +3906,6 @@ namespace Spectrum
                     ref readonly var q = ref ChordQualities[qi];
                     double score = ScoreCandidate(c, root, q, ChordNoteThresholdLow);
                     if (score > double.NegativeInfinity) anyMatchLow = true;
-                    score += KeyContextChordBias(root, qi);
                     if (score > bestScore) { bestScore = score; bestRoot = root; bestQi = qi; }
                 }
             }
@@ -3989,73 +3916,10 @@ namespace Spectrum
             // AND Pass 2 found something richer. A valid triad (3+ notes) at 10% locks
             // out any relaxed-threshold upgrade.
             if (anyMatch && (strictLen >= 3 || ChordQualities[bestQi].Intervals.Length <= strictLen))
-            { bestRoot = bestRootStrict; bestQi = bestQiStrict; }
+                return BuildResult(bestRootStrict, bestQiStrict);
 
-            // Chord label hysteresis: suppress flickering between extensions/variants
-            // of the same chord (e.g. Cmaj vs Cmaj7 vs Csus2) by requiring the new
-            // winner to beat the second-best score by a meaningful margin, AND by
-            // preferring the currently-displayed chord when it ties with a variant.
-            if (_lastChordRoot >= 0)
-            {
-                bool sameCore = bestRoot == _lastChordRoot &&
-                                ChordCoreQuality(bestQi) == ChordCoreQuality(_lastChordQi);
-
-                if (sameCore)
-                {
-                    // Same root + family: only upgrade to a richer extension if it
-                    // clearly outscore the current displayed quality right now.
-                    double currentScore = ScoreCandidate(c, _lastChordRoot,
-                        ChordQualities[_lastChordQi], ChordNoteThresholdLow)
-                        + KeyContextChordBias(_lastChordRoot, _lastChordQi);
-                    if (bestScore < currentScore + CHORD_HYSTERESIS_EXTENSION)
-                        return BuildResult(_lastChordRoot, _lastChordQi);
-                }
-                else
-                {
-                    // Different chord: re-score the currently displayed chord and
-                    // require the challenger to beat it by a clear margin.
-                    double currentScore = ScoreCandidate(c, _lastChordRoot,
-                        ChordQualities[_lastChordQi], ChordNoteThresholdLow)
-                        + KeyContextChordBias(_lastChordRoot, _lastChordQi);
-                    if (bestScore < currentScore + CHORD_HYSTERESIS_CHANGE)
-                        return BuildResult(_lastChordRoot, _lastChordQi);
-                }
-            }
-
-            _lastChordRoot = bestRoot;
-            _lastChordQi = bestQi;
             return BuildResult(bestRoot, bestQi);
         }
-
-        // Maps a chord quality index to a coarse category so that e.g. maj/maj7/maj9
-        // are all treated as the same "major" family for hysteresis purposes.
-        private static int ChordCoreQuality(int qi)
-        {
-            if (qi < 0) return -1;
-            ref readonly var q = ref ChordQualities[qi];
-            bool hasMaj3 = false, hasMin3 = false, hasDim5 = false, hasAug5 = false, hasSus = false;
-            foreach (int iv in q.Intervals)
-            {
-                if (iv == 4) hasMaj3 = true;
-                if (iv == 3) hasMin3 = true;
-                if (iv == 6) hasDim5 = true;
-                if (iv == 8) hasAug5 = true;
-                if (iv == 2 || iv == 5) hasSus = true;
-            }
-            if (hasSus && !hasMaj3 && !hasMin3) return 4; // sus family
-            if (hasDim5 && hasMin3) return 3;              // dim family
-            if (hasAug5 && hasMaj3) return 2;              // aug family
-            if (hasMin3) return 1;                         // minor family
-            return 0;                                      // major family
-        }
-
-        private int _lastChordRoot = -1;
-        private int _lastChordQi = -1;
-
-        // Margin required to switch to a richer extension of the same root+quality.
-        private const double CHORD_HYSTERESIS_EXTENSION = 0.04;
-        // Margin required to switch to a genuinely different chord.
-        private const double CHORD_HYSTERESIS_CHANGE = 0.08;
 
         private string BuildCanonical(int rootPc, int qi)
         {
@@ -4134,12 +3998,6 @@ namespace Spectrum
 
         private void Pic_Paint(object sender, PaintEventArgs e)
         {
-
-            if (cbShowCircle.Checked)
-            {
-                DrawCircleOfFifths(e.Graphics, pic.Width, pic.Height);
-                return;
-            }
             lock (bitmapLock)
             {
                 if (spectrogramBitmap != null)

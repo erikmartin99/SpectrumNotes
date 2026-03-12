@@ -378,67 +378,67 @@ namespace Spectrum
         private readonly double[] _chromaNorm = new double[12];
 
         // ── Chord qualities ──────────────────────────────────────────────────
-        private static readonly (string Suffix, int[] Intervals, int ThirdOffset, bool HasThird)[]
+        private static readonly (string Suffix, int[] Intervals, int ThirdOffset, bool HasThird, double ObscurityPenalty)[]
             ChordQualities =
             {
                 // ── Triads ──────────────────────────────────────────────────
-                ("maj",      new[]{0,4,7},          4,  true),
-                ("maj(no5)",      new[]{0,4},          4,  true),
-                ("m",        new[]{0,3,7},          3,  true),
-                ("m(no5)",        new[]{0,3},          3,  true),
-                ("dim",      new[]{0,3,6},          3,  true),
-                ("aug",      new[]{0,4,8},          4,  true),
-                ("sus2",     new[]{0,2,7},          2,  false),
-                ("sus4",     new[]{0,5,7},          5,  false),
-                ("",         new[]{0,7},            -1, false),
+                ("maj",      new[]{0,4,7},          4,  true, 0.00),
+                ("maj(no5)",      new[]{0,4},          4,  true, 0.08),
+                ("m",        new[]{0,3,7},          3,  true, 0.00),
+                ("m(no5)",        new[]{0,3},          3,  true, 0.08),
+                ("dim",      new[]{0,3,6},          3,  true, 0.05),
+                ("aug",      new[]{0,4,8},          4,  true, 0.10),
+                ("sus2",     new[]{0,2,7},          2,  false, 0.05),
+                ("sus4",     new[]{0,5,7},          5,  false, 0.05),
+                ("",         new[]{0,7},            -1, false, 0.10),
 
                 // ── Dominant / Dominant-extended ────────────────────────────
-                ("7",        new[]{0,4,7,10},       4,  true),
-                ("7(no5)",        new[]{0,4,10},       4,  true),
-                ("9",        new[]{0,4,7,10,2},     4,  true),
-                ("9(no5)",        new[]{0,4,10,2},     4,  true),
-                ("11",       new[]{0,4,7,10,2,5},   4,  true),
-                ("13",       new[]{0,4,7,10,9},     4,  true),
-                ("7sus4",    new[]{0,5,7,10},       5,  false),
-                ("7sus2",    new[]{0,2,7,10},       2,  false),
+                ("7",        new[]{0,4,7,10},       4,  true, 0.00),
+                ("7(no5)",        new[]{0,4,10},       4,  true, 0.08),
+                ("9",        new[]{0,4,7,10,2},     4,  true, 0.08),
+                ("9(no5)",        new[]{0,4,10,2},     4,  true, 0.15),
+                ("11",       new[]{0,4,7,10,2,5},   4,  true, 0.20),
+                ("13",       new[]{0,4,7,10,9},     4,  true, 0.15),
+                ("7sus4",    new[]{0,5,7,10},       5,  false, 0.08),
+                ("7sus2",    new[]{0,2,7,10},       2,  false, 0.12),
 
                 // ── Major seventh family ─────────────────────────────────────
-                ("maj7",     new[]{0,4,7,11},       4,  true),
-                ("maj7(no5)", new[]{0,4,11},       4,  true),
-                ("maj9",     new[]{0,4,7,11,2},     4,  true),
-                ("maj9(no5)",     new[]{0,4,11,2},     4,  true),
-                ("maj11",    new[]{0,4,7,11,2,5},   4,  true),
-                ("maj13",    new[]{0,4,7,11,9},     4,  true),
+                ("maj7",     new[]{0,4,7,11},       4,  true, 0.00),
+                ("maj7(no5)", new[]{0,4,11},       4,  true, 0.10),
+                ("maj9",     new[]{0,4,7,11,2},     4,  true, 0.10),
+                ("maj9(no5)",     new[]{0,4,11,2},     4,  true, 0.18),
+                ("maj11",    new[]{0,4,7,11,2,5},   4,  true, 0.25),
+                ("maj13",    new[]{0,4,7,11,9},     4,  true, 0.20),
 
                 // ── Minor seventh family ─────────────────────────────────────
-                ("m7",       new[]{0,3,7,10},       3,  true),
-                ("m7(no5)",       new[]{0,3,10},       3,  true),
-                ("m9",       new[]{0,3,7,10,2},     3,  true),
-                ("m9(no5)",       new[]{0,3,10,2},     3,  true),
-                ("m11",      new[]{0,3,7,10,2,5},   3,  true),
-                ("m(maj7)",  new[]{0,3,7,11},       3,  true),
-                ("m(maj9)",  new[]{0,3,7,11,2},     3,  true),
+                ("m7",       new[]{0,3,7,10},       3,  true, 0.00),
+                ("m7(no5)",       new[]{0,3,10},       3,  true, 0.10),
+                ("m9",       new[]{0,3,7,10,2},     3,  true, 0.10),
+                ("m9(no5)",       new[]{0,3,10,2},     3,  true, 0.18),
+                ("m11",      new[]{0,3,7,10,2,5},   3,  true, 0.25),
+                ("m(maj7)",  new[]{0,3,7,11},       3,  true, 0.20),
+                ("m(maj9)",  new[]{0,3,7,11,2},     3,  true, 0.28),
 
                 // ── Diminished / Half-diminished ─────────────────────────────
-                ("dim7",     new[]{0,3,6,9},        3,  true),
-                ("m7b5",     new[]{0,3,6,10},       3,  true),
+                ("dim7",     new[]{0,3,6,9},        3,  true, 0.08),
+                ("m7b5",     new[]{0,3,6,10},       3,  true, 0.10),
 
                 // ── Augmented seventh ────────────────────────────────────────
-                ("aug7",     new[]{0,4,8,10},       4,  true),
-                ("augMaj7",  new[]{0,4,8,11},       4,  true),
+                ("aug7",     new[]{0,4,8,10},       4,  true, 0.25),
+                ("augMaj7",  new[]{0,4,8,11},       4,  true, 0.30),
 
                 // ── Sixth chords ─────────────────────────────────────────────
                 
-                ("6",     new[]{0,4,7,9},        4,  true),
-                ("6(no5)",     new[]{0,4,9},        4,  true),
-                ("m6",     new[]{0,3,7,9},        3,  true),
-                ("m6(no5)",     new[]{0,3,9},        3,  true),
-                ("6/9",      new[]{0,4,7,9,2},      4,  true),
+                ("6",     new[]{0,4,7,9},        4,  true, 0.05),
+                ("6(no5)",     new[]{0,4,9},        4,  true, 0.12),
+                ("m6",     new[]{0,3,7,9},        3,  true, 0.08),
+                ("m6(no5)",     new[]{0,3,9},        3,  true, 0.15),
+                ("6/9",      new[]{0,4,7,9,2},      4,  true, 0.15),
 
                 // ── Add chords ───────────────────────────────────────────────
-                ("majAdd9",     new[]{0,2,4,7},        4,  true),
-                ("mAdd9",    new[]{0,2,3,7},        3,  true),
-                ("add4",     new[]{0,4,5,7},        4,  true),
+                ("majAdd9",     new[]{0,2,4,7},        4,  true, 0.08),
+                ("mAdd9",    new[]{0,2,3,7},        3,  true, 0.10),
+                ("add4",     new[]{0,4,5,7},        4,  true, 0.15)
             };
 
         // ────────────────────────────────────────────────────────────────────
@@ -3874,9 +3874,10 @@ namespace Spectrum
             if (hasMinorThird && minorThirdDiatonic && !majorThirdDiatonic)
                 return bias;
 
-            // Major is diatonic, minor is not → bias toward major quality
-            if (hasMajorThird && majorThirdDiatonic && !minorThirdDiatonic)
-                return bias;
+            // Do NOT bias toward major even if the major third is diatonic.
+            // Key context should only rescue a minor chord from being mis-labelled
+            // major, never the other way around.  When the audio has a strong minor
+            // third the scoring already penalises the major reading via wrongThirdPenalty.
 
             return 0.0;
         }
@@ -3885,7 +3886,7 @@ namespace Spectrum
 
         private double ScoreCandidate(
             Span<double> c, int root,
-            in (string Suffix, int[] Intervals, int ThirdOffset, bool HasThird) q,
+            in (string Suffix, int[] Intervals, int ThirdOffset, bool HasThird, double ObscurityPenalty) q,
             double threshold)
         {
             for (int ki = 0; ki < q.Intervals.Length; ki++)
@@ -3912,10 +3913,16 @@ namespace Spectrum
             double thirdBonus = q.HasThird ? 0.25 * c[(root + q.ThirdOffset) % 12] : 0.0;
             double fifthBonus = 0.08 * c[(root + 7) % 12];
 
+            // Complexity penalty: scaled by how weakly the extra notes are present.
+            // Increased coefficient so extended chords require clear evidence.
             int extraNotes = q.Intervals.Length - 3;
             double complexityPenalty = extraNotes > 0
-                ? 0.015 * extraNotes * (1.0 - inChord / Math.Max(1e-6, q.Intervals.Length * threshold))
+                ? 0.04 * extraNotes * (1.0 - inChord / Math.Max(1e-6, q.Intervals.Length * threshold))
                 : 0.0;
+
+            // Obscurity penalty: flat deduction that a common chord does not pay.
+            // Rare/exotic chords must outscore common ones by this margin to win.
+            double obscurityPenalty = q.ObscurityPenalty;
 
             return inChord
                  - CHORD_OUT_PENALTY * outChord
@@ -3923,7 +3930,8 @@ namespace Spectrum
                  + rootBonus
                  + thirdBonus
                  + fifthBonus
-                 - complexityPenalty;
+                 - complexityPenalty
+                 - obscurityPenalty;
         }
 
         private (string Label, string Canonical) DetectChord(double[] chroma)

@@ -472,7 +472,7 @@ namespace Spectrum
             // At e=0.04 (trace):    out contribution ≈ 0.05
             // At e=0.12 (real):     out contribution ≈ 0.23
             // At e=0.20 (dominant): out contribution ≈ 0.52
-
+             
             var intervals = _modeIntervals[modeIndex];
             var inSet = new bool[12];
             foreach (int iv in intervals) inSet[(root + iv) % 12] = true;
@@ -547,7 +547,7 @@ namespace Spectrum
 
             OnScaleSelectionChanged(this, EventArgs.Empty);
         }
-
+         
         private bool _autoKeyUpdating = false;
 
         private void SetChordLabelUi(string text, string canonical = "", string detectedNotes = null, string harmonics = null)

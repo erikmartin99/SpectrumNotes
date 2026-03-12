@@ -17,7 +17,7 @@ using System.Linq;
 using System.Windows.Forms;
 
 namespace Spectrum
-{
+{ 
     public partial class Form1
     {
         // ── Active scale filter ───────────────────────────────────────────────

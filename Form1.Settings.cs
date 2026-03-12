@@ -92,6 +92,7 @@ namespace Spectrum
             [JsonPropertyName("scale_root")] public string ScaleRoot { get; set; } = "E";
             [JsonPropertyName("scale_mode")] public string ScaleMode { get; set; } = "Major (Ionian)";
             [JsonPropertyName("auto_detect_key")] public bool AutoDetectKey { get; set; } = true;
+            [JsonPropertyName("show_circle_of_fifths")] public bool ShowCircleOfFifths { get; set; } = false;
         }
 
         // ── Trackbar ↔ _smoothedMaxIntensity conversion ─────────────────────
@@ -182,7 +183,7 @@ namespace Spectrum
             CHORD_AVG_FRAMES = Math.Clamp(s.ChordAvgFrames, 1, 120);
             CHORD_OUT_PENALTY = Math.Clamp(s.ChordOutPenalty, 0.0, 10.0);
             CHORD_RIDGES = Math.Clamp(s.ChordRidges, 0, 15);
-            KEY_EMA_SECONDS = Math.Clamp(s.KeyEmaSeconds, 0.5, 600.0);
+            //KEY_EMA_SECONDS = Math.Clamp(s.KeyEmaSeconds, 0.5, 600.0);
             KEY_MODE_BIAS = Math.Clamp(s.KeyModeBias, 0.0, 1.0);
 
             if (TryParseNoteToMidi(s.HighPassNote, out int hpMidi))
@@ -226,6 +227,7 @@ namespace Spectrum
                 if (modeIdx >= 0) cmbScaleMode.SelectedIndex = modeIdx;
             }
             cbAutoKey.Checked = s.AutoDetectKey;
+            cbShowCircle.Checked = s.ShowCircleOfFifths;
         }
 
         private void SaveSettings()
@@ -275,7 +277,7 @@ namespace Spectrum
                     ChordAvgFrames = CHORD_AVG_FRAMES,
                     ChordOutPenalty = CHORD_OUT_PENALTY,
                     ChordRidges = CHORD_RIDGES,
-                    KeyEmaSeconds = KEY_EMA_SECONDS,
+    //                KeyEmaSeconds = KEY_EMA_SECONDS,
                     KeyModeBias = KEY_MODE_BIAS,
 
                     HighPassNote = HighPassNote,
@@ -292,6 +294,7 @@ namespace Spectrum
                     ScaleRoot = cmbScaleRoot.SelectedItem?.ToString() ?? "",
                     ScaleMode = cmbScaleMode.SelectedItem?.ToString() ?? "",
                     AutoDetectKey = cbAutoKey.Checked,
+                    ShowCircleOfFifths = cbShowCircle.Checked,
                 };
 
                 Directory.CreateDirectory(Path.GetDirectoryName(SettingsPath)!);

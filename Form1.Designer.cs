@@ -25,6 +25,7 @@ namespace Spectrum
             cbFlats = new CheckBox();
             tabControl1 = new TabControl();
             tabAnalysis = new TabPage();
+            cbShowCircle = new CheckBox();
             label2 = new Label();
             cmbScaleMode = new ComboBox();
             cbAutoKey = new CheckBox();
@@ -114,7 +115,6 @@ namespace Spectrum
             lblFpsReadout = new Label();
             panel2 = new Panel();
             pic = new SpectrogramPanel();
-            cbShowCircle = new CheckBox();
             panel1.SuspendLayout();
             tabControl1.SuspendLayout();
             tabAnalysis.SuspendLayout();
@@ -230,6 +230,16 @@ namespace Spectrum
             tabAnalysis.TabIndex = 0;
             tabAnalysis.Text = "Analysis";
             tabAnalysis.UseVisualStyleBackColor = true;
+            // 
+            // cbShowCircle
+            // 
+            cbShowCircle.AutoSize = true;
+            cbShowCircle.Location = new Point(7, 525);
+            cbShowCircle.Name = "cbShowCircle";
+            cbShowCircle.Size = new Size(237, 19);
+            cbShowCircle.TabIndex = 313;
+            cbShowCircle.Text = "Show Chords and Key on Circle of Fifths";
+            cbShowCircle.UseVisualStyleBackColor = true;
             // 
             // label2
             // 
@@ -1056,16 +1066,6 @@ namespace Spectrum
             pic.Size = new Size(1178, 976);
             pic.TabIndex = 0;
             pic.TabStop = false;
-            // 
-            // cbShowCircle
-            // 
-            cbShowCircle.AutoSize = true;
-            cbShowCircle.Location = new Point(7, 506);
-            cbShowCircle.Name = "cbShowCircle";
-            cbShowCircle.Size = new Size(237, 19);
-            cbShowCircle.TabIndex = 313;
-            cbShowCircle.Text = "Show Chords and Key on Circle of Fifths";
-            cbShowCircle.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 

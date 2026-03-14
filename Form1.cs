@@ -3876,9 +3876,9 @@ namespace Spectrum
 
             // Do NOT bias toward major even if the major third is diatonic.
             // Key context should only rescue a minor chord from being mis-labelled
-            // major, never the other way around.  When the audio has a strong minor
-            // third the scoring already penalises the major reading via wrongThirdPenalty.
-
+            // major, never the other way around.  ScoreCandidate's thirdBonus is
+            // capped at root presence so chords whose third exceeds their root are
+            // naturally down-scored relative to root-dominant readings.
             return 0.0;
         }
 
@@ -3910,7 +3910,15 @@ namespace Spectrum
             double avgInChord = inChord / Math.Max(1, q.Intervals.Length);
             double rootBonus = 0.35 * Math.Min(1.0, c[root] / Math.Max(1e-6, avgInChord));
 
-            double thirdBonus = q.HasThird ? 0.25 * c[(root + q.ThirdOffset) % 12] : 0.0;
+            // Third bonus: scaled relative to the root so a chord whose third is
+            // louder than its root (e.g. Dm where F > D) doesn't get a free ride.
+            // We cap the ratio at 1.0: a third equal to the root earns the full bonus;
+            // a third weaker than the root earns proportionally less.
+            double rootPresence = c[root];
+            double thirdPresence = q.HasThird ? c[(root + q.ThirdOffset) % 12] : 0.0;
+            double thirdBonus = q.HasThird
+                ? 0.25 * Math.Min(1.0, thirdPresence / Math.Max(1e-6, rootPresence)) * rootPresence
+                : 0.0;
             double fifthBonus = 0.08 * c[(root + 7) % 12];
 
             // Complexity penalty: scaled by how weakly the extra notes are present.
@@ -4774,7 +4782,7 @@ namespace Spectrum
                     }
                 }
             }
-        } 
+        }
 
         // ====================================================================
         //  Math helpers

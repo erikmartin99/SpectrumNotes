@@ -46,10 +46,7 @@ namespace Spectrum
                 "20", "Light CPU; spectrogram scrolls slowly and ridge response is sluggish but sustainable on slower machines.",
                 "120", "Very high rate; smooth scrolling and fast note-attack detection — demands significant CPU, especially with large FFT sizes."));
 
-            ParamHint.Register(lblOverlapFactor, new ParamHintInfo(
-                "Read-only. Hop size in samples, computed as sampleRate ÷ Target FPS. Shows how far audio advances between successive analysis frames.",
-                "small (≈ 100–400)", "High frame rate; smooth scrolling and fast response but heavier CPU load.",
-                "large (≈ 1000+)", "Low frame rate; reduces CPU but makes the display choppy and slows ridge response."));
+
 
 
             ParamHint.Register(lblMaxColShift, new ParamHintInfo(

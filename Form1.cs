@@ -24,33 +24,33 @@ namespace Spectrum
     public partial class Form1 : Form
     {
         // ── Tuning ──────────────────────────────────────────────────────────
-        private double tuning = 440.0;
+        private double tuning; // default: AppSettings.Tuning = 440.0
 
         // ── FFT / STFT ───────────────────────────────────────────────────────
         // High-freq FFT — smaller window, better time resolution for high frequencies.
         // This is the primary FFT used for peak extraction and ridge tracking.
-        private int FFT_SIZE = 4096;
+        private int FFT_SIZE; // default: AppSettings.FftSize = 4096
         // Low-freq FFT — larger window, better frequency resolution for low frequencies.
         // Only active when _lowFftEnabled is true.
-        private int FFT_SIZE_L = 8192;
+        private int FFT_SIZE_L; // default: AppSettings.FftSizeLow = 8192
         // Ring buffer must hold enough samples for the larger of the two FFT windows.
         private int RingSize => _lowFftEnabled ? Math.Max(FFT_SIZE, FFT_SIZE_L) : FFT_SIZE;
 
         // When true, the low-freq FFT is computed and blended in below the crossover.
-        private bool _lowFftEnabled = true;
+        private bool _lowFftEnabled; // default: AppSettings.LowFftEnabled = true
         // Crossover note (e.g. "G3") — the centre of the blend region.
-        private string LOW_FFT_CROSSOVER_NOTE = "C3";
+        private string LOW_FFT_CROSSOVER_NOTE; // default: AppSettings.LowFftCrossoverNote = "C3"
         // Cached Hz value for the crossover centre.
-        private double LOW_FFT_CROSSOVER_HZ = 130.81; // C3 ≈ 130.81 Hz
+        private double LOW_FFT_CROSSOVER_HZ; // default: C3 ≈ 130.81 Hz (set via TryParseNoteToMidi in LoadSettings)
         // Width of the blend region in semitones (total span; blend = 0 at centre-half, 1 at centre+half).
-        private double LOW_FFT_CROSSOVER_SEMITONES = 6.0;
-        private int HOP_SIZE = 136;        // hop in samples; auto-set from TARGET_FPS when > 0
-        private double TARGET_FPS = 120.0;  // target frames/sec; 0 = use HOP_SIZE directly
-        private double MAX_COL_SHIFT = 128.0; // time-reassignment clamp in samples (clamp before /hopSize)
-        private int MAX_QUEUED_FRAMES = 20;
-        private double HARMONIC_SUPPRESSION = 0;
+        private double LOW_FFT_CROSSOVER_SEMITONES; // default: AppSettings.LowFftCrossoverSemitones = 6.0
+        private int HOP_SIZE;        // hop in samples; auto-set from TARGET_FPS when > 0; default: AppSettings.OverlapFactor = 240
+        private double TARGET_FPS;   // target frames/sec; 0 = use HOP_SIZE directly; default: AppSettings.TargetFps = 120.0
+        private double MAX_COL_SHIFT; // time-reassignment clamp in samples (clamp before /hopSize); default: AppSettings.MaxColShift = 128.0
+        private int MAX_QUEUED_FRAMES; // default: AppSettings.MaxQueuedFrames = 20
+        private double HARMONIC_SUPPRESSION; // default: AppSettings.HarmonicSuppression = 0.0
         const int TunerAvgFrames = 40;
-        private int PEAK_MODE = 0;
+        private int PEAK_MODE; // default: AppSettings.PeakMode = 0
 
         // Accumulator — one slot per tracked ridge, keyed by ridge Id.
         private struct RidgeAccum
@@ -75,23 +75,23 @@ namespace Spectrum
         private readonly Dictionary<int, Ridge> _ridgeById = new(MaxActiveRidges);
 
         // ── Peak / Ridge ─────────────────────────────────────────────────────
-        private int MAX_PEAKS_PER_FRAME = 25;
-        private double PEAK_MIN_REL = 0.03;
-        private double PEAK_MIN_SPACING_CENTS = 0.0;
+        private int MAX_PEAKS_PER_FRAME; // default: AppSettings.MaxPeaks = 25
+        private double PEAK_MIN_REL; // default: AppSettings.PeakMinRel = 0.03
+        private double PEAK_MIN_SPACING_CENTS; // default: AppSettings.PeakMinSpacingCents = 0.0
 
         // Ridge match parameters
-        private double RIDGE_MATCH_LOGHZ = 0.022;
-        private double RIDGE_MATCH_LOGHZ_PRED_BOOST = 1.75;
-        private double RIDGE_MAX_CENTS_JUMP = 250.0;
-        private int RIDGE_MISS_MAX = 10;
-        private double RIDGE_FREQ_EMA = 0.7;
-        private double RIDGE_VEL_EMA = 0.7;
-        private double RIDGE_INTENSITY_EMA = 0.1;
-        private double PEAK_GAMMA = 0.5;
-        private double RIDGE_MERGE_CENTS = 20.0;
-        private double RIDGE_MERGE_BRIGHTNESS_BOOST = 2.0;
-        private double RIDGE_MERGE_WIDTH_ADD = 0.1;
-        private double RIDGE_MERGE_WIDTH_DECAY = 0.95; // per-frame decay multiplier for merge width bonus (0=one-shot, 1=never fades)
+        private double RIDGE_MATCH_LOGHZ; // default: AppSettings.RidgeMatchLogHz = 0.022
+        private double RIDGE_MATCH_LOGHZ_PRED_BOOST; // default: AppSettings.RidgeMatchLogHzPredBoost = 1.75
+        private double RIDGE_MAX_CENTS_JUMP; // default: AppSettings.RidgeMaxCentsJump = 250.0
+        private int RIDGE_MISS_MAX; // default: AppSettings.RidgeMissMax = 10
+        private double RIDGE_FREQ_EMA; // default: AppSettings.RidgeFreqEma = 0.7
+        private double RIDGE_VEL_EMA; // default: AppSettings.RidgeVelEma = 0.7
+        private double RIDGE_INTENSITY_EMA; // default: AppSettings.RidgeIntensityEma = 0.1
+        private double PEAK_GAMMA; // default: AppSettings.PeakGamma = 0.5
+        private double RIDGE_MERGE_CENTS; // default: AppSettings.RidgeMergeCents = 20.0
+        private double RIDGE_MERGE_BRIGHTNESS_BOOST; // default: AppSettings.RidgeMergeBrightnessBoost = 2.0
+        private double RIDGE_MERGE_WIDTH_ADD; // default: AppSettings.RidgeMergeWidthAdd = 0.1
+        private double RIDGE_MERGE_WIDTH_DECAY; // per-frame decay multiplier for merge width bonus; default: AppSettings.RidgeMergeWidthDecay = 0.95
         private const double TunerMinHz = 70.0;
         private const double TunerSwitchConfirmCents = 18.0;
         private const int TunerSwitchConfirmFrames = 4;
@@ -104,13 +104,13 @@ namespace Spectrum
         private const double TunerFundamentalKeepScoreRatio = 0.72;
 
         // ── Harmonic family collapse ─────────────────────────────────────────
-        private double HARMONIC_FAMILY_CENTS_TOL = 45.0;
-        private double HARMONIC_FAMILY_MAX_RATIO = 12.0;
+        private double HARMONIC_FAMILY_CENTS_TOL; // default: AppSettings.HarmonicFamilyCentsTol = 45.0
+        private double HARMONIC_FAMILY_MAX_RATIO; // default: AppSettings.HarmonicFamilyMaxRatio = 12.0
 
         // ── Chord detection ──────────────────────────────────────────────────
-        private int CHORD_AVG_FRAMES = 12;
-        private double CHORD_OUT_PENALTY = 0.35;
-        private int CHORD_RIDGES = 15;
+        private int CHORD_AVG_FRAMES; // default: AppSettings.ChordAvgFrames = 12
+        private double CHORD_OUT_PENALTY; // default: AppSettings.ChordOutPenalty = 0.35
+        private int CHORD_RIDGES; // default: AppSettings.ChordRidges = 15
 
         private readonly object chordLock = new();
         private readonly Queue<double[]> chromaQueue = new();
@@ -137,10 +137,10 @@ namespace Spectrum
         private int lastMouseX = -1;
 
         // ── Filter / Display range ───────────────────────────────────────────
-        private string HighPassNote = "A1";
-        private string LowPassNote = "C8";
-        private double HighPass = 0.0;
-        private double LowPass = 0.0;
+        private string HighPassNote; // default: AppSettings.HighPassNote = "A1"
+        private string LowPassNote;  // default: AppSettings.LowPassNote = "C8"
+        private double HighPass;     // set via TryParseNoteToMidi in LoadSettings
+        private double LowPass;
         private string[] chordCols;
         private string[] detectedNotesCols;
         private string[] canonicalCols;
@@ -179,7 +179,7 @@ namespace Spectrum
         private readonly object bitmapLock = new();
 
         // ── Flat notation ─────────────────────────────────────────────────────
-        private bool _useFlats = false;
+        private bool _useFlats; // default: AppSettings.UseFlats = false
 
         // ── Scale ────────────────────────────────────────────────────────────
         private float displayFmin = 20f, displayFmax = 20000f;
@@ -187,7 +187,7 @@ namespace Spectrum
         // Symmetric EMA alpha for level normalization smoothing.
         // 0 = disabled (re-normalize every frame to current peak, classic behavior).
         // >0 = EMA alpha applied symmetrically on both attack and decay.
-        private double LEVEL_SMOOTH_EMA = 0.0;
+        private double LEVEL_SMOOTH_EMA; // default: AppSettings.LevelSmoothEma = 0.0
 
         // ── Volume lock (manual sensitivity) ─────────────────────────────────
         // Written on the UI thread, read on the audio thread — must be volatile.
@@ -223,9 +223,9 @@ namespace Spectrum
 
         // [OPT-1] Pre-computed pow table for RidgeMissFadePow^miss
         private double[] _missFadeTable = Array.Empty<double>();
-        private double RidgeMissFadePow = 0.8;
-        private double RidgeAgeDecay = 0.05;
-        private double MinDrawAlpha = 0.2;
+        private double RidgeMissFadePow; // default: AppSettings.MissFadePow = 0.8
+        private double RidgeAgeDecay;    // default: AppSettings.AgeDecay = 0.05
+        private double MinDrawAlpha;     // default: AppSettings.MinDrawAlpha = 0.2
 
         private void RebuildMissFadeTable()
         {
@@ -1323,7 +1323,7 @@ namespace Spectrum
             tbLowFftCrossoverSemitones.Text = LOW_FFT_CROSSOVER_SEMITONES.ToString("0.##", CultureInfo.InvariantCulture);
             tbLowFftCrossoverNote.Enabled = _lowFftEnabled;
             tbLowFftCrossoverSemitones.Enabled = _lowFftEnabled;
-            tbOverlapFactor.Text = HOP_SIZE.ToString(CultureInfo.InvariantCulture);
+            //tbOverlapFactor.Text = HOP_SIZE.ToString(CultureInfo.InvariantCulture);
             tbMaxPeaksPerFrame.Text = MAX_PEAKS_PER_FRAME.ToString(CultureInfo.InvariantCulture);
             tbPeakMinRel.Text = PEAK_MIN_REL.ToString("0.########", CultureInfo.InvariantCulture);
             tbPeakMode.Text = PEAK_MODE.ToString(CultureInfo.InvariantCulture);
@@ -1600,7 +1600,7 @@ namespace Spectrum
             {
                 int computed = Math.Max(1, (int)Math.Round(captureFormat.SampleRate / TARGET_FPS));
                 HOP_SIZE = computed;
-                tbOverlapFactor.Text = HOP_SIZE.ToString(CultureInfo.InvariantCulture);
+                //tbOverlapFactor.Text = HOP_SIZE.ToString(CultureInfo.InvariantCulture);
                 lock (sampleLock) { hopSize = HOP_SIZE; samplesSinceLastFrame = 0; }
             }
             else if (TARGET_FPS > 0)
@@ -1620,7 +1620,7 @@ namespace Spectrum
             if (TARGET_FPS > 0)
             {
                 HOP_SIZE = Math.Max(1, (int)Math.Round(captureFormat.SampleRate / TARGET_FPS));
-                tbOverlapFactor.Text = HOP_SIZE.ToString(CultureInfo.InvariantCulture);
+                //tbOverlapFactor.Text = HOP_SIZE.ToString(CultureInfo.InvariantCulture);
             }
             hopSize = Math.Max(1, HOP_SIZE);
             ringWritePos = ringFilled = samplesSinceLastFrame = 0;
@@ -2099,11 +2099,11 @@ namespace Spectrum
                 _fpsFrameCount = 0;
                 _fpsWindowStart = nowTick;
                 // Marshal to UI thread — lblFpsReadout is a WinForms control
-                if (lblFpsReadout.IsHandleCreated && !lblFpsReadout.IsDisposed)
+                if (lblFpsReadout.IsHandleCreated && !lblFpsR.IsDisposed)
                     lblFpsReadout.BeginInvoke((Action)(() =>
-                        lblFpsReadout.Text = $"Actual FPS: {fps2}"));
+                        lblFpsReadout.Text = $"{fps2}"));
             }
-
+            
             if (_profFrameCount >= ProfInterval)
             {
                 double n2 = _profFrameCount;

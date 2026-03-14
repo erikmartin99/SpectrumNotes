@@ -22,29 +22,29 @@ namespace Spectrum
             // When true the low-freq FFT is computed and blended in below the crossover.
             [JsonPropertyName("low_fft_enabled")] public bool LowFftEnabled { get; set; } = true;
             // Crossover centre note (e.g. "G3") — below this the low-FFT is preferred.
-            [JsonPropertyName("low_fft_crossover_note")] public string LowFftCrossoverNote { get; set; } = "C3";
+            [JsonPropertyName("low_fft_crossover_note")] public string LowFftCrossoverNote { get; set; } = "A4";
             // Blend region width in semitones (total span centred on the crossover note).
-            [JsonPropertyName("low_fft_crossover_semitones")] public double LowFftCrossoverSemitones { get; set; } = 6.0;
-            [JsonPropertyName("overlap_factor")] public int OverlapFactor { get; set; } = 240;
+            [JsonPropertyName("low_fft_crossover_semitones")] public double LowFftCrossoverSemitones { get; set; } = 3.0;
+            [JsonPropertyName("overlap_factor")] public int OverlapFactor { get; set; } = 800;
             [JsonPropertyName("max_queued_frames")] public int MaxQueuedFrames { get; set; } = 20;
             [JsonPropertyName("scroll_decimate")] public int ScrollDecimate { get; set; } = 1;
 
-            [JsonPropertyName("max_peaks")] public int MaxPeaks { get; set; } = 25;
-            [JsonPropertyName("peak_min_rel")] public double PeakMinRel { get; set; } = 0.03;
+            [JsonPropertyName("max_peaks")] public int MaxPeaks { get; set; } = 30;
+            [JsonPropertyName("peak_min_rel")] public double PeakMinRel { get; set; } = 0.05;
             [JsonPropertyName("peak_min_spacing_cents")] public double PeakMinSpacingCents { get; set; } = 0.0;
-            [JsonPropertyName("peak_gamma")] public double PeakGamma { get; set; } = 0.5;
+            [JsonPropertyName("peak_gamma")] public double PeakGamma { get; set; } = 0.65;
             [JsonPropertyName("peak_mode")] public int PeakMode { get; set; } = 0;
 
             [JsonPropertyName("ridge_max_cents_jump")] public double RidgeMaxCentsJump { get; set; } = 250.0;
-            [JsonPropertyName("ridge_miss_max")] public int RidgeMissMax { get; set; } = 10;
+            [JsonPropertyName("ridge_miss_max")] public int RidgeMissMax { get; set; } = 6;
             [JsonPropertyName("ridge_merge_cents")] public double RidgeMergeCents { get; set; } = 20.0;
             [JsonPropertyName("ridge_merge_brightness_boost")] public double RidgeMergeBrightnessBoost { get; set; } = 2.0;
             [JsonPropertyName("ridge_merge_width_add")] public double RidgeMergeWidthAdd { get; set; } = 0.1;
             [JsonPropertyName("ridge_merge_width_decay")] public double RidgeMergeWidthDecay { get; set; } = 0.95;
 
             [JsonPropertyName("ridge_intensity_ema")] public double RidgeIntensityEma { get; set; } = 0.1;
-            [JsonPropertyName("ridge_freq_ema")] public double RidgeFreqEma { get; set; } = 0.7;
-            [JsonPropertyName("ridge_vel_ema")] public double RidgeVelEma { get; set; } = 0.7;
+            [JsonPropertyName("ridge_freq_ema")] public double RidgeFreqEma { get; set; } = 0.6;
+            [JsonPropertyName("ridge_vel_ema")] public double RidgeVelEma { get; set; } = 0.6;
 
             [JsonPropertyName("ridge_thickness_max")] public int RidgeThicknessMax { get; set; } = 2;
 
@@ -66,8 +66,8 @@ namespace Spectrum
 
             // High Pass = bottom of display (lowest note shown).
             // Low Pass  = top of display (highest note shown).
-            [JsonPropertyName("high_pass_note")] public string HighPassNote { get; set; } = "A1";
-            [JsonPropertyName("low_pass_note")] public string LowPassNote { get; set; } = "C8";
+            [JsonPropertyName("high_pass_note")] public string HighPassNote { get; set; } = "F2";
+            [JsonPropertyName("low_pass_note")] public string LowPassNote { get; set; } = "G7";
 
             [JsonPropertyName("tuning")] public double Tuning { get; set; } = 440.0;
 
@@ -75,7 +75,7 @@ namespace Spectrum
             [JsonPropertyName("max_col_shift")] public double MaxColShift { get; set; } = 128.0;
             [JsonPropertyName("ridge_match_loghz")] public double RidgeMatchLogHz { get; set; } = 0.022;
             [JsonPropertyName("ridge_match_loghz_pred_boost")] public double RidgeMatchLogHzPredBoost { get; set; } = 1.75;
-            [JsonPropertyName("show_grid_lines")] public bool ShowGridLines { get; set; } = true;
+            [JsonPropertyName("show_grid_lines")] public bool ShowGridLines { get; set; } = false;
             [JsonPropertyName("use_flats")] public bool UseFlats { get; set; } = false;
             [JsonPropertyName("selected_device_name")] public string SelectedDeviceName { get; set; } = "Loopback: VoiceMeeter Input (VB-Audio VoiceMeeter VAIO)";
 
@@ -89,9 +89,9 @@ namespace Spectrum
             [JsonPropertyName("volume_value")] public int VolumeValue { get; set; } = 153;
 
             // Key / mode / auto-detect controls.
-            [JsonPropertyName("scale_root")] public string ScaleRoot { get; set; } = "E";
+            [JsonPropertyName("scale_root")] public string ScaleRoot { get; set; } = "Chromatic";
             [JsonPropertyName("scale_mode")] public string ScaleMode { get; set; } = "Major (Ionian)";
-            [JsonPropertyName("auto_detect_key")] public bool AutoDetectKey { get; set; } = true;
+            [JsonPropertyName("auto_detect_key")] public bool AutoDetectKey { get; set; } = false;
             [JsonPropertyName("show_circle_of_fifths")] public bool ShowCircleOfFifths { get; set; } = false;
         }
 
@@ -121,21 +121,21 @@ namespace Spectrum
 
         private void LoadSettings(out bool showGridLines, out string savedDeviceName, out bool useFlats)
         {
-            showGridLines = false;
-            savedDeviceName = "";
-            useFlats = false;
+            // Start with compiled-in defaults. If no save file exists or loading fails,
+            // these defaults are applied — AppSettings is the single source of truth.
+            var s = new AppSettings();
 
-            AppSettings s;
-            try
+            if (File.Exists(SettingsPath))
             {
-                if (!File.Exists(SettingsPath)) return;
-                s = JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(SettingsPath));
-                if (s == null) return;
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[Settings] Load failed: {ex.Message}");
-                return;
+                try
+                {
+                    s = JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(SettingsPath)) ?? s;
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[Settings] Load failed: {ex.Message}");
+                    // s stays as default AppSettings — apply block runs normally below.
+                }
             }
 
             FFT_SIZE = NextPowerOfTwo(Math.Clamp(s.FftSize, 256, 1 << 20));
@@ -277,7 +277,7 @@ namespace Spectrum
                     ChordAvgFrames = CHORD_AVG_FRAMES,
                     ChordOutPenalty = CHORD_OUT_PENALTY,
                     ChordRidges = CHORD_RIDGES,
-    //                KeyEmaSeconds = KEY_EMA_SECONDS,
+                    //                KeyEmaSeconds = KEY_EMA_SECONDS,
                     KeyModeBias = KEY_MODE_BIAS,
 
                     HighPassNote = HighPassNote,

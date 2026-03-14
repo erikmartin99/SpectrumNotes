@@ -43,6 +43,7 @@ namespace Spectrum
             lbEmail = new Label();
             tabSettings = new TabPage();
             settingsScroll = new Panel();
+            lblFpsReadout = new Label();
             lblFFTSize = new Label();
             tbFFTSize = new TextBox();
             cbLowFft = new CheckBox();
@@ -50,8 +51,6 @@ namespace Spectrum
             tbLowFftCrossoverNote = new TextBox();
             lblLowFftCrossoverSemitones = new Label();
             tbLowFftCrossoverSemitones = new TextBox();
-            lblOverlapFactor = new Label();
-            tbOverlapFactor = new TextBox();
             lblLevelSmoothEma = new Label();
             tbLevelSmoothEma = new TextBox();
             label3 = new Label();
@@ -112,7 +111,7 @@ namespace Spectrum
             tbMaxColShift = new TextBox();
             lblTargetFps = new Label();
             tbTargetFps = new TextBox();
-            lblFpsReadout = new Label();
+            lblFpsR = new Label();
             panel2 = new Panel();
             pic = new SpectrogramPanel();
             panel1.SuspendLayout();
@@ -401,6 +400,7 @@ namespace Spectrum
             // 
             settingsScroll.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             settingsScroll.AutoScroll = true;
+            settingsScroll.Controls.Add(lblFpsReadout);
             settingsScroll.Controls.Add(lblFFTSize);
             settingsScroll.Controls.Add(tbFFTSize);
             settingsScroll.Controls.Add(cbLowFft);
@@ -408,8 +408,6 @@ namespace Spectrum
             settingsScroll.Controls.Add(tbLowFftCrossoverNote);
             settingsScroll.Controls.Add(lblLowFftCrossoverSemitones);
             settingsScroll.Controls.Add(tbLowFftCrossoverSemitones);
-            settingsScroll.Controls.Add(lblOverlapFactor);
-            settingsScroll.Controls.Add(tbOverlapFactor);
             settingsScroll.Controls.Add(lblLevelSmoothEma);
             settingsScroll.Controls.Add(tbLevelSmoothEma);
             settingsScroll.Controls.Add(label3);
@@ -470,11 +468,20 @@ namespace Spectrum
             settingsScroll.Controls.Add(tbMaxColShift);
             settingsScroll.Controls.Add(lblTargetFps);
             settingsScroll.Controls.Add(tbTargetFps);
-            settingsScroll.Controls.Add(lblFpsReadout);
+            settingsScroll.Controls.Add(lblFpsR);
             settingsScroll.Location = new Point(0, 0);
             settingsScroll.Name = "settingsScroll";
             settingsScroll.Size = new Size(302, 894);
             settingsScroll.TabIndex = 0;
+            // 
+            // lblFpsReadout
+            // 
+            lblFpsReadout.AutoSize = true;
+            lblFpsReadout.Location = new Point(188, 170);
+            lblFpsReadout.Name = "lblFpsReadout";
+            lblFpsReadout.Size = new Size(22, 15);
+            lblFpsReadout.TabIndex = 408;
+            lblFpsReadout.Text = "---";
             // 
             // lblFFTSize
             // 
@@ -533,29 +540,10 @@ namespace Spectrum
             tbLowFftCrossoverSemitones.Size = new Size(90, 23);
             tbLowFftCrossoverSemitones.TabIndex = 407;
             // 
-            // lblOverlapFactor
-            // 
-            lblOverlapFactor.AutoSize = true;
-            lblOverlapFactor.Enabled = false;
-            lblOverlapFactor.Location = new Point(4, 115);
-            lblOverlapFactor.Name = "lblOverlapFactor";
-            lblOverlapFactor.Size = new Size(90, 15);
-            lblOverlapFactor.TabIndex = 8;
-            lblOverlapFactor.Text = "Computed Hop";
-            // 
-            // tbOverlapFactor
-            // 
-            tbOverlapFactor.BackColor = SystemColors.Control;
-            tbOverlapFactor.Location = new Point(188, 112);
-            tbOverlapFactor.Name = "tbOverlapFactor";
-            tbOverlapFactor.ReadOnly = true;
-            tbOverlapFactor.Size = new Size(90, 23);
-            tbOverlapFactor.TabIndex = 9;
-            // 
             // lblLevelSmoothEma
             // 
             lblLevelSmoothEma.AutoSize = true;
-            lblLevelSmoothEma.Location = new Point(4, 143);
+            lblLevelSmoothEma.Location = new Point(4, 338);
             lblLevelSmoothEma.Name = "lblLevelSmoothEma";
             lblLevelSmoothEma.Size = new Size(107, 15);
             lblLevelSmoothEma.TabIndex = 110;
@@ -563,7 +551,7 @@ namespace Spectrum
             // 
             // tbLevelSmoothEma
             // 
-            tbLevelSmoothEma.Location = new Point(188, 140);
+            tbLevelSmoothEma.Location = new Point(188, 335);
             tbLevelSmoothEma.Name = "tbLevelSmoothEma";
             tbLevelSmoothEma.Size = new Size(90, 23);
             tbLevelSmoothEma.TabIndex = 111;
@@ -572,7 +560,7 @@ namespace Spectrum
             // 
             label3.AutoSize = true;
             label3.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
-            label3.Location = new Point(4, 170);
+            label3.Location = new Point(4, 115);
             label3.Name = "label3";
             label3.Size = new Size(70, 15);
             label3.TabIndex = 61;
@@ -580,7 +568,7 @@ namespace Spectrum
             // 
             // tbtuning
             // 
-            tbtuning.Location = new Point(188, 167);
+            tbtuning.Location = new Point(188, 112);
             tbtuning.Name = "tbtuning";
             tbtuning.Size = new Size(90, 23);
             tbtuning.TabIndex = 62;
@@ -589,7 +577,7 @@ namespace Spectrum
             // 
             lblMaxPeaksPerFrame.AutoSize = true;
             lblMaxPeaksPerFrame.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
-            lblMaxPeaksPerFrame.Location = new Point(4, 202);
+            lblMaxPeaksPerFrame.Location = new Point(4, 222);
             lblMaxPeaksPerFrame.Name = "lblMaxPeaksPerFrame";
             lblMaxPeaksPerFrame.Size = new Size(93, 15);
             lblMaxPeaksPerFrame.TabIndex = 12;
@@ -597,7 +585,7 @@ namespace Spectrum
             // 
             // tbMaxPeaksPerFrame
             // 
-            tbMaxPeaksPerFrame.Location = new Point(188, 199);
+            tbMaxPeaksPerFrame.Location = new Point(188, 219);
             tbMaxPeaksPerFrame.Name = "tbMaxPeaksPerFrame";
             tbMaxPeaksPerFrame.Size = new Size(90, 23);
             tbMaxPeaksPerFrame.TabIndex = 13;
@@ -605,7 +593,7 @@ namespace Spectrum
             // lblPeakMinRel
             // 
             lblPeakMinRel.AutoSize = true;
-            lblPeakMinRel.Location = new Point(4, 229);
+            lblPeakMinRel.Location = new Point(4, 367);
             lblPeakMinRel.Name = "lblPeakMinRel";
             lblPeakMinRel.Size = new Size(75, 15);
             lblPeakMinRel.TabIndex = 14;
@@ -613,7 +601,7 @@ namespace Spectrum
             // 
             // tbPeakMinRel
             // 
-            tbPeakMinRel.Location = new Point(188, 226);
+            tbPeakMinRel.Location = new Point(188, 364);
             tbPeakMinRel.Name = "tbPeakMinRel";
             tbPeakMinRel.Size = new Size(90, 23);
             tbPeakMinRel.TabIndex = 15;
@@ -621,7 +609,7 @@ namespace Spectrum
             // lblPeakMinSpacingCents
             // 
             lblPeakMinSpacingCents.AutoSize = true;
-            lblPeakMinSpacingCents.Location = new Point(4, 256);
+            lblPeakMinSpacingCents.Location = new Point(4, 394);
             lblPeakMinSpacingCents.Name = "lblPeakMinSpacingCents";
             lblPeakMinSpacingCents.Size = new Size(140, 15);
             lblPeakMinSpacingCents.TabIndex = 43;
@@ -629,7 +617,7 @@ namespace Spectrum
             // 
             // tbPeakMinSpacingCents
             // 
-            tbPeakMinSpacingCents.Location = new Point(188, 253);
+            tbPeakMinSpacingCents.Location = new Point(188, 391);
             tbPeakMinSpacingCents.Name = "tbPeakMinSpacingCents";
             tbPeakMinSpacingCents.Size = new Size(90, 23);
             tbPeakMinSpacingCents.TabIndex = 44;
@@ -638,7 +626,7 @@ namespace Spectrum
             // 
             lblPeakGamma.AutoSize = true;
             lblPeakGamma.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
-            lblPeakGamma.Location = new Point(4, 283);
+            lblPeakGamma.Location = new Point(4, 193);
             lblPeakGamma.Name = "lblPeakGamma";
             lblPeakGamma.Size = new Size(92, 15);
             lblPeakGamma.TabIndex = 32;
@@ -646,7 +634,7 @@ namespace Spectrum
             // 
             // tbPeakGamma
             // 
-            tbPeakGamma.Location = new Point(188, 280);
+            tbPeakGamma.Location = new Point(188, 190);
             tbPeakGamma.Name = "tbPeakGamma";
             tbPeakGamma.Size = new Size(90, 23);
             tbPeakGamma.TabIndex = 33;
@@ -654,7 +642,7 @@ namespace Spectrum
             // lblPeakMode
             // 
             lblPeakMode.AutoSize = true;
-            lblPeakMode.Location = new Point(4, 310);
+            lblPeakMode.Location = new Point(4, 423);
             lblPeakMode.Name = "lblPeakMode";
             lblPeakMode.Size = new Size(66, 15);
             lblPeakMode.TabIndex = 68;
@@ -662,7 +650,7 @@ namespace Spectrum
             // 
             // tbPeakMode
             // 
-            tbPeakMode.Location = new Point(188, 307);
+            tbPeakMode.Location = new Point(188, 420);
             tbPeakMode.Name = "tbPeakMode";
             tbPeakMode.Size = new Size(90, 23);
             tbPeakMode.TabIndex = 69;
@@ -670,7 +658,7 @@ namespace Spectrum
             // lblRidgeMaxCentsJump
             // 
             lblRidgeMaxCentsJump.AutoSize = true;
-            lblRidgeMaxCentsJump.Location = new Point(4, 342);
+            lblRidgeMaxCentsJump.Location = new Point(4, 455);
             lblRidgeMaxCentsJump.Name = "lblRidgeMaxCentsJump";
             lblRidgeMaxCentsJump.Size = new Size(127, 15);
             lblRidgeMaxCentsJump.TabIndex = 20;
@@ -678,7 +666,7 @@ namespace Spectrum
             // 
             // tbRidgeMaxCentsJump
             // 
-            tbRidgeMaxCentsJump.Location = new Point(188, 339);
+            tbRidgeMaxCentsJump.Location = new Point(188, 452);
             tbRidgeMaxCentsJump.Name = "tbRidgeMaxCentsJump";
             tbRidgeMaxCentsJump.Size = new Size(90, 23);
             tbRidgeMaxCentsJump.TabIndex = 21;
@@ -686,7 +674,7 @@ namespace Spectrum
             // lblRidgeMissMax
             // 
             lblRidgeMissMax.AutoSize = true;
-            lblRidgeMissMax.Location = new Point(4, 369);
+            lblRidgeMissMax.Location = new Point(4, 482);
             lblRidgeMissMax.Name = "lblRidgeMissMax";
             lblRidgeMissMax.Size = new Size(89, 15);
             lblRidgeMissMax.TabIndex = 22;
@@ -694,7 +682,7 @@ namespace Spectrum
             // 
             // tbRidgeMissMax
             // 
-            tbRidgeMissMax.Location = new Point(188, 366);
+            tbRidgeMissMax.Location = new Point(188, 479);
             tbRidgeMissMax.Name = "tbRidgeMissMax";
             tbRidgeMissMax.Size = new Size(90, 23);
             tbRidgeMissMax.TabIndex = 23;
@@ -702,7 +690,7 @@ namespace Spectrum
             // lblRidgeFreqEMA
             // 
             lblRidgeFreqEMA.AutoSize = true;
-            lblRidgeFreqEMA.Location = new Point(4, 396);
+            lblRidgeFreqEMA.Location = new Point(4, 509);
             lblRidgeFreqEMA.Name = "lblRidgeFreqEMA";
             lblRidgeFreqEMA.Size = new Size(91, 15);
             lblRidgeFreqEMA.TabIndex = 26;
@@ -710,7 +698,7 @@ namespace Spectrum
             // 
             // tbRidgeFreqEMA
             // 
-            tbRidgeFreqEMA.Location = new Point(188, 393);
+            tbRidgeFreqEMA.Location = new Point(188, 506);
             tbRidgeFreqEMA.Name = "tbRidgeFreqEMA";
             tbRidgeFreqEMA.Size = new Size(90, 23);
             tbRidgeFreqEMA.TabIndex = 27;
@@ -718,7 +706,7 @@ namespace Spectrum
             // lblRidgeVelEMA
             // 
             lblRidgeVelEMA.AutoSize = true;
-            lblRidgeVelEMA.Location = new Point(4, 423);
+            lblRidgeVelEMA.Location = new Point(4, 536);
             lblRidgeVelEMA.Name = "lblRidgeVelEMA";
             lblRidgeVelEMA.Size = new Size(83, 15);
             lblRidgeVelEMA.TabIndex = 28;
@@ -726,7 +714,7 @@ namespace Spectrum
             // 
             // tbRidgeVelEMA
             // 
-            tbRidgeVelEMA.Location = new Point(188, 420);
+            tbRidgeVelEMA.Location = new Point(188, 533);
             tbRidgeVelEMA.Name = "tbRidgeVelEMA";
             tbRidgeVelEMA.Size = new Size(90, 23);
             tbRidgeVelEMA.TabIndex = 29;
@@ -735,7 +723,7 @@ namespace Spectrum
             // 
             lblRidgeIntensityEMA.AutoSize = true;
             lblRidgeIntensityEMA.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
-            lblRidgeIntensityEMA.Location = new Point(4, 450);
+            lblRidgeIntensityEMA.Location = new Point(4, 280);
             lblRidgeIntensityEMA.Name = "lblRidgeIntensityEMA";
             lblRidgeIntensityEMA.Size = new Size(119, 15);
             lblRidgeIntensityEMA.TabIndex = 204;
@@ -743,7 +731,7 @@ namespace Spectrum
             // 
             // tbRidgeIntensityEMA
             // 
-            tbRidgeIntensityEMA.Location = new Point(188, 447);
+            tbRidgeIntensityEMA.Location = new Point(188, 277);
             tbRidgeIntensityEMA.Name = "tbRidgeIntensityEMA";
             tbRidgeIntensityEMA.Size = new Size(90, 23);
             tbRidgeIntensityEMA.TabIndex = 205;
@@ -751,7 +739,7 @@ namespace Spectrum
             // lblMissFadePow
             // 
             lblMissFadePow.AutoSize = true;
-            lblMissFadePow.Location = new Point(4, 477);
+            lblMissFadePow.Location = new Point(4, 567);
             lblMissFadePow.Name = "lblMissFadePow";
             lblMissFadePow.Size = new Size(85, 15);
             lblMissFadePow.TabIndex = 82;
@@ -759,7 +747,7 @@ namespace Spectrum
             // 
             // tbMissFadePow
             // 
-            tbMissFadePow.Location = new Point(188, 474);
+            tbMissFadePow.Location = new Point(188, 564);
             tbMissFadePow.Name = "tbMissFadePow";
             tbMissFadePow.Size = new Size(90, 23);
             tbMissFadePow.TabIndex = 83;
@@ -767,7 +755,7 @@ namespace Spectrum
             // lblAgeDecay
             // 
             lblAgeDecay.AutoSize = true;
-            lblAgeDecay.Location = new Point(4, 504);
+            lblAgeDecay.Location = new Point(4, 591);
             lblAgeDecay.Name = "lblAgeDecay";
             lblAgeDecay.Size = new Size(63, 15);
             lblAgeDecay.TabIndex = 84;
@@ -775,7 +763,7 @@ namespace Spectrum
             // 
             // tbAgeDecay
             // 
-            tbAgeDecay.Location = new Point(188, 501);
+            tbAgeDecay.Location = new Point(188, 588);
             tbAgeDecay.Name = "tbAgeDecay";
             tbAgeDecay.Size = new Size(90, 23);
             tbAgeDecay.TabIndex = 85;
@@ -783,7 +771,7 @@ namespace Spectrum
             // lblMinDrawAlpha
             // 
             lblMinDrawAlpha.AutoSize = true;
-            lblMinDrawAlpha.Location = new Point(4, 531);
+            lblMinDrawAlpha.Location = new Point(4, 618);
             lblMinDrawAlpha.Name = "lblMinDrawAlpha";
             lblMinDrawAlpha.Size = new Size(92, 15);
             lblMinDrawAlpha.TabIndex = 86;
@@ -791,7 +779,7 @@ namespace Spectrum
             // 
             // tbMinDrawAlpha
             // 
-            tbMinDrawAlpha.Location = new Point(188, 528);
+            tbMinDrawAlpha.Location = new Point(188, 615);
             tbMinDrawAlpha.Name = "tbMinDrawAlpha";
             tbMinDrawAlpha.Size = new Size(90, 23);
             tbMinDrawAlpha.TabIndex = 87;
@@ -800,7 +788,7 @@ namespace Spectrum
             // 
             lblRidgeMergeCents.AutoSize = true;
             lblRidgeMergeCents.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
-            lblRidgeMergeCents.Location = new Point(4, 563);
+            lblRidgeMergeCents.Location = new Point(4, 251);
             lblRidgeMergeCents.Name = "lblRidgeMergeCents";
             lblRidgeMergeCents.Size = new Size(120, 15);
             lblRidgeMergeCents.TabIndex = 45;
@@ -808,7 +796,7 @@ namespace Spectrum
             // 
             // tbRidgeMergeCents
             // 
-            tbRidgeMergeCents.Location = new Point(188, 560);
+            tbRidgeMergeCents.Location = new Point(188, 248);
             tbRidgeMergeCents.Name = "tbRidgeMergeCents";
             tbRidgeMergeCents.Size = new Size(90, 23);
             tbRidgeMergeCents.TabIndex = 46;
@@ -816,7 +804,7 @@ namespace Spectrum
             // lblRidgeMergeBrightnessBoost
             // 
             lblRidgeMergeBrightnessBoost.AutoSize = true;
-            lblRidgeMergeBrightnessBoost.Location = new Point(4, 590);
+            lblRidgeMergeBrightnessBoost.Location = new Point(4, 647);
             lblRidgeMergeBrightnessBoost.Name = "lblRidgeMergeBrightnessBoost";
             lblRidgeMergeBrightnessBoost.Size = new Size(132, 15);
             lblRidgeMergeBrightnessBoost.TabIndex = 76;
@@ -824,7 +812,7 @@ namespace Spectrum
             // 
             // tbRidgeMergeBrightnessBoost
             // 
-            tbRidgeMergeBrightnessBoost.Location = new Point(188, 587);
+            tbRidgeMergeBrightnessBoost.Location = new Point(188, 644);
             tbRidgeMergeBrightnessBoost.Name = "tbRidgeMergeBrightnessBoost";
             tbRidgeMergeBrightnessBoost.Size = new Size(90, 23);
             tbRidgeMergeBrightnessBoost.TabIndex = 77;
@@ -833,7 +821,7 @@ namespace Spectrum
             // 
             lblRidgeMergeWidthAdd.AutoSize = true;
             lblRidgeMergeWidthAdd.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
-            lblRidgeMergeWidthAdd.Location = new Point(4, 617);
+            lblRidgeMergeWidthAdd.Location = new Point(4, 309);
             lblRidgeMergeWidthAdd.Name = "lblRidgeMergeWidthAdd";
             lblRidgeMergeWidthAdd.Size = new Size(106, 15);
             lblRidgeMergeWidthAdd.TabIndex = 78;
@@ -841,7 +829,7 @@ namespace Spectrum
             // 
             // tbRidgeMergeWidthAdd
             // 
-            tbRidgeMergeWidthAdd.Location = new Point(188, 614);
+            tbRidgeMergeWidthAdd.Location = new Point(188, 306);
             tbRidgeMergeWidthAdd.Name = "tbRidgeMergeWidthAdd";
             tbRidgeMergeWidthAdd.Size = new Size(90, 23);
             tbRidgeMergeWidthAdd.TabIndex = 79;
@@ -849,7 +837,7 @@ namespace Spectrum
             // lblRidgeMergeWidthDecay
             // 
             lblRidgeMergeWidthDecay.AutoSize = true;
-            lblRidgeMergeWidthDecay.Location = new Point(4, 644);
+            lblRidgeMergeWidthDecay.Location = new Point(4, 676);
             lblRidgeMergeWidthDecay.Name = "lblRidgeMergeWidthDecay";
             lblRidgeMergeWidthDecay.Size = new Size(111, 15);
             lblRidgeMergeWidthDecay.TabIndex = 202;
@@ -857,7 +845,7 @@ namespace Spectrum
             // 
             // tbRidgeMergeWidthDecay
             // 
-            tbRidgeMergeWidthDecay.Location = new Point(188, 641);
+            tbRidgeMergeWidthDecay.Location = new Point(188, 673);
             tbRidgeMergeWidthDecay.Name = "tbRidgeMergeWidthDecay";
             tbRidgeMergeWidthDecay.Size = new Size(90, 23);
             tbRidgeMergeWidthDecay.TabIndex = 203;
@@ -865,7 +853,7 @@ namespace Spectrum
             // lblHarmonicFamilyCentsTol
             // 
             lblHarmonicFamilyCentsTol.AutoSize = true;
-            lblHarmonicFamilyCentsTol.Location = new Point(4, 676);
+            lblHarmonicFamilyCentsTol.Location = new Point(4, 708);
             lblHarmonicFamilyCentsTol.Name = "lblHarmonicFamilyCentsTol";
             lblHarmonicFamilyCentsTol.Size = new Size(150, 15);
             lblHarmonicFamilyCentsTol.TabIndex = 38;
@@ -873,7 +861,7 @@ namespace Spectrum
             // 
             // tbHarmonicFamilyCentsTol
             // 
-            tbHarmonicFamilyCentsTol.Location = new Point(188, 673);
+            tbHarmonicFamilyCentsTol.Location = new Point(188, 705);
             tbHarmonicFamilyCentsTol.Name = "tbHarmonicFamilyCentsTol";
             tbHarmonicFamilyCentsTol.Size = new Size(90, 23);
             tbHarmonicFamilyCentsTol.TabIndex = 39;
@@ -881,7 +869,7 @@ namespace Spectrum
             // lblHarmonicFamilyMaxRatio
             // 
             lblHarmonicFamilyMaxRatio.AutoSize = true;
-            lblHarmonicFamilyMaxRatio.Location = new Point(4, 703);
+            lblHarmonicFamilyMaxRatio.Location = new Point(4, 735);
             lblHarmonicFamilyMaxRatio.Name = "lblHarmonicFamilyMaxRatio";
             lblHarmonicFamilyMaxRatio.Size = new Size(153, 15);
             lblHarmonicFamilyMaxRatio.TabIndex = 40;
@@ -889,7 +877,7 @@ namespace Spectrum
             // 
             // tbHarmonicFamilyMaxRatio
             // 
-            tbHarmonicFamilyMaxRatio.Location = new Point(188, 700);
+            tbHarmonicFamilyMaxRatio.Location = new Point(188, 732);
             tbHarmonicFamilyMaxRatio.Name = "tbHarmonicFamilyMaxRatio";
             tbHarmonicFamilyMaxRatio.Size = new Size(90, 23);
             tbHarmonicFamilyMaxRatio.TabIndex = 41;
@@ -897,7 +885,7 @@ namespace Spectrum
             // lblHarmonicSuppression
             // 
             lblHarmonicSuppression.AutoSize = true;
-            lblHarmonicSuppression.Location = new Point(4, 730);
+            lblHarmonicSuppression.Location = new Point(4, 762);
             lblHarmonicSuppression.Name = "lblHarmonicSuppression";
             lblHarmonicSuppression.Size = new Size(127, 15);
             lblHarmonicSuppression.TabIndex = 70;
@@ -905,7 +893,7 @@ namespace Spectrum
             // 
             // tbHarmonicSuppression
             // 
-            tbHarmonicSuppression.Location = new Point(188, 727);
+            tbHarmonicSuppression.Location = new Point(188, 759);
             tbHarmonicSuppression.Name = "tbHarmonicSuppression";
             tbHarmonicSuppression.Size = new Size(90, 23);
             tbHarmonicSuppression.TabIndex = 71;
@@ -913,7 +901,7 @@ namespace Spectrum
             // lblChordAvgFrames
             // 
             lblChordAvgFrames.AutoSize = true;
-            lblChordAvgFrames.Location = new Point(4, 762);
+            lblChordAvgFrames.Location = new Point(4, 794);
             lblChordAvgFrames.Name = "lblChordAvgFrames";
             lblChordAvgFrames.Size = new Size(105, 15);
             lblChordAvgFrames.TabIndex = 49;
@@ -921,7 +909,7 @@ namespace Spectrum
             // 
             // tbChordAvgFrames
             // 
-            tbChordAvgFrames.Location = new Point(188, 759);
+            tbChordAvgFrames.Location = new Point(188, 791);
             tbChordAvgFrames.Name = "tbChordAvgFrames";
             tbChordAvgFrames.Size = new Size(90, 23);
             tbChordAvgFrames.TabIndex = 50;
@@ -929,7 +917,7 @@ namespace Spectrum
             // lblChordOutPenalty
             // 
             lblChordOutPenalty.AutoSize = true;
-            lblChordOutPenalty.Location = new Point(4, 789);
+            lblChordOutPenalty.Location = new Point(4, 821);
             lblChordOutPenalty.Name = "lblChordOutPenalty";
             lblChordOutPenalty.Size = new Size(105, 15);
             lblChordOutPenalty.TabIndex = 53;
@@ -937,7 +925,7 @@ namespace Spectrum
             // 
             // tbChordOutPenalty
             // 
-            tbChordOutPenalty.Location = new Point(188, 786);
+            tbChordOutPenalty.Location = new Point(188, 818);
             tbChordOutPenalty.Name = "tbChordOutPenalty";
             tbChordOutPenalty.Size = new Size(90, 23);
             tbChordOutPenalty.TabIndex = 54;
@@ -945,7 +933,7 @@ namespace Spectrum
             // lblAdd9ExtraScore
             // 
             lblAdd9ExtraScore.AutoSize = true;
-            lblAdd9ExtraScore.Location = new Point(4, 816);
+            lblAdd9ExtraScore.Location = new Point(4, 848);
             lblAdd9ExtraScore.Name = "lblAdd9ExtraScore";
             lblAdd9ExtraScore.Size = new Size(124, 15);
             lblAdd9ExtraScore.TabIndex = 55;
@@ -953,7 +941,7 @@ namespace Spectrum
             // 
             // tbChordRidges
             // 
-            tbChordRidges.Location = new Point(188, 813);
+            tbChordRidges.Location = new Point(188, 845);
             tbChordRidges.Name = "tbChordRidges";
             tbChordRidges.Size = new Size(90, 23);
             tbChordRidges.TabIndex = 56;
@@ -961,7 +949,7 @@ namespace Spectrum
             // lblKeyEmaSeconds
             // 
             lblKeyEmaSeconds.AutoSize = true;
-            lblKeyEmaSeconds.Location = new Point(4, 845);
+            lblKeyEmaSeconds.Location = new Point(4, 877);
             lblKeyEmaSeconds.Name = "lblKeyEmaSeconds";
             lblKeyEmaSeconds.Size = new Size(101, 15);
             lblKeyEmaSeconds.TabIndex = 57;
@@ -969,7 +957,7 @@ namespace Spectrum
             // 
             // tbKeyEmaSeconds
             // 
-            tbKeyEmaSeconds.Location = new Point(188, 842);
+            tbKeyEmaSeconds.Location = new Point(188, 874);
             tbKeyEmaSeconds.Name = "tbKeyEmaSeconds";
             tbKeyEmaSeconds.Size = new Size(90, 23);
             tbKeyEmaSeconds.TabIndex = 58;
@@ -977,7 +965,7 @@ namespace Spectrum
             // lblRidgeMatchLogHz
             // 
             lblRidgeMatchLogHz.AutoSize = true;
-            lblRidgeMatchLogHz.Location = new Point(4, 904);
+            lblRidgeMatchLogHz.Location = new Point(4, 936);
             lblRidgeMatchLogHz.Name = "lblRidgeMatchLogHz";
             lblRidgeMatchLogHz.Size = new Size(111, 15);
             lblRidgeMatchLogHz.TabIndex = 0;
@@ -985,7 +973,7 @@ namespace Spectrum
             // 
             // tbRidgeMatchLogHz
             // 
-            tbRidgeMatchLogHz.Location = new Point(188, 901);
+            tbRidgeMatchLogHz.Location = new Point(188, 933);
             tbRidgeMatchLogHz.Name = "tbRidgeMatchLogHz";
             tbRidgeMatchLogHz.Size = new Size(90, 23);
             tbRidgeMatchLogHz.TabIndex = 0;
@@ -993,7 +981,7 @@ namespace Spectrum
             // lblRidgeMatchLogHzPredBoost
             // 
             lblRidgeMatchLogHzPredBoost.AutoSize = true;
-            lblRidgeMatchLogHzPredBoost.Location = new Point(4, 874);
+            lblRidgeMatchLogHzPredBoost.Location = new Point(4, 906);
             lblRidgeMatchLogHzPredBoost.Name = "lblRidgeMatchLogHzPredBoost";
             lblRidgeMatchLogHzPredBoost.Size = new Size(101, 15);
             lblRidgeMatchLogHzPredBoost.TabIndex = 0;
@@ -1001,7 +989,7 @@ namespace Spectrum
             // 
             // tbRidgeMatchLogHzPredBoost
             // 
-            tbRidgeMatchLogHzPredBoost.Location = new Point(188, 874);
+            tbRidgeMatchLogHzPredBoost.Location = new Point(188, 906);
             tbRidgeMatchLogHzPredBoost.Name = "tbRidgeMatchLogHzPredBoost";
             tbRidgeMatchLogHzPredBoost.Size = new Size(90, 23);
             tbRidgeMatchLogHzPredBoost.TabIndex = 0;
@@ -1009,7 +997,7 @@ namespace Spectrum
             // lblMaxColShift
             // 
             lblMaxColShift.AutoSize = true;
-            lblMaxColShift.Location = new Point(4, 935);
+            lblMaxColShift.Location = new Point(4, 967);
             lblMaxColShift.Name = "lblMaxColShift";
             lblMaxColShift.Size = new Size(77, 15);
             lblMaxColShift.TabIndex = 0;
@@ -1017,7 +1005,7 @@ namespace Spectrum
             // 
             // tbMaxColShift
             // 
-            tbMaxColShift.Location = new Point(188, 932);
+            tbMaxColShift.Location = new Point(188, 964);
             tbMaxColShift.Name = "tbMaxColShift";
             tbMaxColShift.Size = new Size(90, 23);
             tbMaxColShift.TabIndex = 0;
@@ -1026,7 +1014,7 @@ namespace Spectrum
             // 
             lblTargetFps.AutoSize = true;
             lblTargetFps.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
-            lblTargetFps.Location = new Point(3, 965);
+            lblTargetFps.Location = new Point(3, 144);
             lblTargetFps.Name = "lblTargetFps";
             lblTargetFps.Size = new Size(66, 15);
             lblTargetFps.TabIndex = 0;
@@ -1034,19 +1022,19 @@ namespace Spectrum
             // 
             // tbTargetFps
             // 
-            tbTargetFps.Location = new Point(188, 962);
+            tbTargetFps.Location = new Point(188, 141);
             tbTargetFps.Name = "tbTargetFps";
             tbTargetFps.Size = new Size(90, 23);
             tbTargetFps.TabIndex = 0;
             // 
-            // lblFpsReadout
+            // lblFpsR
             // 
-            lblFpsReadout.AutoSize = true;
-            lblFpsReadout.Location = new Point(4, 993);
-            lblFpsReadout.Name = "lblFpsReadout";
-            lblFpsReadout.Size = new Size(81, 15);
-            lblFpsReadout.TabIndex = 0;
-            lblFpsReadout.Text = "Actual FPS: —";
+            lblFpsR.AutoSize = true;
+            lblFpsR.Location = new Point(4, 170);
+            lblFpsR.Name = "lblFpsR";
+            lblFpsR.Size = new Size(63, 15);
+            lblFpsR.TabIndex = 0;
+            lblFpsR.Text = "Actual FPS";
             // 
             // panel2
             // 
@@ -1109,7 +1097,6 @@ namespace Spectrum
         private Panel settingsScroll;
 
         private TextBox tbFFTSize;
-        private TextBox tbOverlapFactor;
         // Dual-FFT controls
         // lblLowFftSize and tbLowFftSize removed
         private CheckBox cbLowFft;
@@ -1131,7 +1118,6 @@ namespace Spectrum
         private TextBox tbHarmonicFamilyMaxRatio;
 
         private Label lblFFTSize;
-        private Label lblOverlapFactor;
         private Label lblMaxPeaksPerFrame;
         private Label lblPeakMinRel;
         private Label lblRidgeMatchLogHz;
@@ -1199,7 +1185,7 @@ namespace Spectrum
         private TextBox tbMaxColShift;
         private Label lblTargetFps;
         private TextBox tbTargetFps;
-        private Label lblFpsReadout;
+        private Label lblFpsR;
         private Label label2;
         private ComboBox cmbScaleMode;
         private CheckBox cbAutoKey;
@@ -1208,5 +1194,6 @@ namespace Spectrum
         private ComboBox cmbScaleRoot;
         private TextBox tbRidgeMatchLogHzPredBoost;
         private CheckBox cbShowCircle;
+        private Label lblFpsReadout;
     }
 }

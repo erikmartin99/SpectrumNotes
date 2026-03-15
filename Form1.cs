@@ -516,6 +516,7 @@ namespace Spectrum
         // which would starve label/control updates and cause bursty scrolling.
         private double UI_MAX_FPS = 60.0;   // cap UI repaints (independent of analysis rate)
         private long _lastUiInvalidateTick = 0;
+        private int _lowFftDebugFrameCounter = 0; // throttle: print low-FFT diagnostics every N frames
         private long _lastTunerTick = 0;
         private long _lastChordTick = 0;
         private long _lastHarmonicsTick = 0;
@@ -1216,7 +1217,8 @@ namespace Spectrum
         {
             var frL = _fReassignL;
             var tcL = _tShiftColsL;
-            if (frL == null || tcL == null) return;
+            var magL = _magL;
+            if (frL == null || tcL == null || magL == null) return;
 
             int NL = _XL?.Length ?? 0;
             int halfL = NL / 2;
@@ -1251,6 +1253,7 @@ namespace Spectrum
 
                 fSm[k] = (1.0 - w) * fSm[k] + w * frL[j];
                 tSm[k] = (1.0 - w) * tSm[k] + w * tcL[j];
+                mag[k] = (1.0 - w) * mag[k] + w * magL[j];
             }
         }
 
@@ -1319,10 +1322,23 @@ namespace Spectrum
             tbFFTSize.Text = Log2(FFT_SIZE).ToString(CultureInfo.InvariantCulture);
             // FFT_SIZE_L is always FFT_SIZE * 2; no separate textbox
             cbLowFft.Checked = _lowFftEnabled;
+            // Populate textboxes, then immediately resolve the note string → Hz
+            // (the Leave handler does this at runtime, but never fires at startup).
             tbLowFftCrossoverNote.Text = LOW_FFT_CROSSOVER_NOTE;
             tbLowFftCrossoverSemitones.Text = LOW_FFT_CROSSOVER_SEMITONES.ToString("0.##", CultureInfo.InvariantCulture);
             tbLowFftCrossoverNote.Enabled = _lowFftEnabled;
             tbLowFftCrossoverSemitones.Enabled = _lowFftEnabled;
+            {
+                string s = (LOW_FFT_CROSSOVER_NOTE ?? "").Trim();
+                if (string.IsNullOrWhiteSpace(s)) s = "C3";
+                if (TryParseNoteToMidi(s, out int midi))
+                {
+                    LOW_FFT_CROSSOVER_NOTE = MidiToNoteName(midi);
+                    LOW_FFT_CROSSOVER_HZ = MidiToHz(midi);
+                    tbLowFftCrossoverNote.Text = LOW_FFT_CROSSOVER_NOTE;
+                }
+            }
+            ApplyDouble(tbLowFftCrossoverSemitones, ref LOW_FFT_CROSSOVER_SEMITONES, min: 0.0, max: 48.0);
             //tbOverlapFactor.Text = HOP_SIZE.ToString(CultureInfo.InvariantCulture);
             tbMaxPeaksPerFrame.Text = MAX_PEAKS_PER_FRAME.ToString(CultureInfo.InvariantCulture);
             tbPeakMinRel.Text = PEAK_MIN_REL.ToString("0.########", CultureInfo.InvariantCulture);
@@ -1976,9 +1992,23 @@ namespace Spectrum
             }
 
             // ── Low-freq FFT blend ────────────────────────────────────────────
-            if (lowFftSnap
-                && hannL?.Length == nLowSnap
-                && RunLowFftReassignment(samples, fs, hopSize))
+            bool _dbg = (++_lowFftDebugFrameCounter % 200 == 1); // print once every ~200 frames
+            bool _hannOk = hannL?.Length == nLowSnap;
+            bool _runOk = false;
+            if (lowFftSnap && _hannOk)
+                _runOk = RunLowFftReassignment(samples, fs, hopSize);
+
+            if (_dbg)
+            {
+                Debug.WriteLine(
+                    $"[LowFFT] enabled={lowFftSnap}  " +
+                    $"FFT_SIZE={FFT_SIZE}  FFT_SIZE_L={FFT_SIZE_L}  N={N}  " +
+                    $"nLowSnap={nLowSnap}  hannL.Len={hannL?.Length.ToString() ?? "null"}  hannOk={_hannOk}  " +
+                    $"_XL.Len={_XL?.Length.ToString() ?? "null"}  samples.Len={samples.Length}  " +
+                    $"RunOk={_runOk}  crossover={crossoverHzSnap:F1}Hz  semi={crossoverSemiSnap:F2}");
+            }
+
+            if (lowFftSnap && _hannOk && _runOk)
             {
                 BlendLowFftReassignment(fSm, tSm, mag, half, fs, crossoverHzSnap, crossoverSemiSnap);
             }
@@ -2103,7 +2133,7 @@ namespace Spectrum
                     lblFpsReadout.BeginInvoke((Action)(() =>
                         lblFpsReadout.Text = $"{fps2}"));
             }
-            
+
             if (_profFrameCount >= ProfInterval)
             {
                 double n2 = _profFrameCount;

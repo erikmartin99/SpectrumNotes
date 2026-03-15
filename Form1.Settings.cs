@@ -139,7 +139,7 @@ namespace Spectrum
             }
 
             FFT_SIZE = NextPowerOfTwo(Math.Clamp(s.FftSize, 256, 1 << 20));
-            FFT_SIZE_L = NextPowerOfTwo(Math.Clamp(s.FftSizeLow, 256, 1 << 20));
+            FFT_SIZE_L = FFT_SIZE * 2;  // Force low-FFT to be larger for better low-freq resolution.
             _lowFftEnabled = s.LowFftEnabled;
             if (TryParseNoteToMidi(s.LowFftCrossoverNote ?? "G3", out int xoMidi))
             {
@@ -237,7 +237,7 @@ namespace Spectrum
                 var s = new AppSettings
                 {
                     FftSize = FFT_SIZE,
-                    FftSizeLow = FFT_SIZE_L,
+                    FftSizeLow = FFT_SIZE * 2,
                     LowFftEnabled = _lowFftEnabled,
                     LowFftCrossoverNote = LOW_FFT_CROSSOVER_NOTE,
                     LowFftCrossoverSemitones = LOW_FFT_CROSSOVER_SEMITONES,

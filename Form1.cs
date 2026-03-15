@@ -2000,12 +2000,18 @@ namespace Spectrum
 
             if (_dbg)
             {
+                // Sample mag[] vs magL[] at a low-freq bin to verify they differ
+                int _dbgBin = Math.Max(1, (int)Math.Round(200.0 * N / fs)); // ~200 Hz bin in high FFT
+                int _dbgBinL = _dbgBin * 2; // corresponding low-FFT bin
+                double _magH = (_dbgBin < mag.Length) ? mag[_dbgBin] : -1;
+                double _magL2 = (_magL != null && _dbgBinL < _magL.Length) ? _magL[_dbgBinL] : -1;
                 Debug.WriteLine(
                     $"[LowFFT] enabled={lowFftSnap}  " +
                     $"FFT_SIZE={FFT_SIZE}  FFT_SIZE_L={FFT_SIZE_L}  N={N}  " +
                     $"nLowSnap={nLowSnap}  hannL.Len={hannL?.Length.ToString() ?? "null"}  hannOk={_hannOk}  " +
                     $"_XL.Len={_XL?.Length.ToString() ?? "null"}  samples.Len={samples.Length}  " +
-                    $"RunOk={_runOk}  crossover={crossoverHzSnap:F1}Hz  semi={crossoverSemiSnap:F2}");
+                    $"RunOk={_runOk}  crossoverNote=\"{LOW_FFT_CROSSOVER_NOTE}\"  crossover={crossoverHzSnap:F1}Hz  semi={crossoverSemiSnap:F2}  " +
+                    $"mag[{_dbgBin}]={_magH:F4}  magL[{_dbgBinL}]={_magL2:F4}");
             }
 
             if (lowFftSnap && _hannOk && _runOk)

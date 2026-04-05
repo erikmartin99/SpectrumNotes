@@ -114,6 +114,7 @@ namespace Spectrum
             lblFpsR = new Label();
             panel2 = new Panel();
             pic = new SpectrogramPanel();
+            settingsPreview = new SettingsPreviewPanel();
             panel1.SuspendLayout();
             tabControl1.SuspendLayout();
             tabAnalysis.SuspendLayout();
@@ -206,6 +207,7 @@ namespace Spectrum
             // 
             // tabAnalysis
             // 
+            tabAnalysis.Controls.Add(settingsPreview);
             tabAnalysis.Controls.Add(cbShowCircle);
             tabAnalysis.Controls.Add(label2);
             tabAnalysis.Controls.Add(cmbScaleMode);
@@ -233,7 +235,7 @@ namespace Spectrum
             // cbShowCircle
             // 
             cbShowCircle.AutoSize = true;
-            cbShowCircle.Location = new Point(7, 525);
+            cbShowCircle.Location = new Point(9, 496);
             cbShowCircle.Name = "cbShowCircle";
             cbShowCircle.Size = new Size(237, 19);
             cbShowCircle.TabIndex = 313;
@@ -359,7 +361,7 @@ namespace Spectrum
             btnRecord.BackColor = Color.FromArgb(139, 0, 0);
             btnRecord.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             btnRecord.ForeColor = Color.White;
-            btnRecord.Location = new Point(9, 667);
+            btnRecord.Location = new Point(116, 384);
             btnRecord.Name = "btnRecord";
             btnRecord.Size = new Size(101, 30);
             btnRecord.TabIndex = 300;
@@ -1055,6 +1057,15 @@ namespace Spectrum
             pic.TabIndex = 0;
             pic.TabStop = false;
             // 
+            // settingsPreview
+            // 
+            settingsPreview.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            settingsPreview.BackColor = Color.Transparent;
+            settingsPreview.Location = new Point(9, 531);
+            settingsPreview.Name = "settingsPreview";
+            settingsPreview.Size = new Size(277, 326);
+            settingsPreview.TabIndex = 314;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -1195,5 +1206,6 @@ namespace Spectrum
         private TextBox tbRidgeMatchLogHzPredBoost;
         private CheckBox cbShowCircle;
         private Label lblFpsReadout;
+        private SettingsPreviewPanel settingsPreview;
     }
 }

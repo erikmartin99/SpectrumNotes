@@ -559,6 +559,8 @@ namespace Spectrum
             ParamHint.Install(this);    // Form1_ParamHint.cs — must precede Register calls
             RegisterParamHints();       // Form1_ParamHintReg.cs
 
+            InitSettingsPreview();
+
             ring = new float[RingSize];
 
             // [OPT-2] Create static comparers once.
@@ -602,6 +604,7 @@ namespace Spectrum
                     ring = new float[RingSize];
                     ringWritePos = ringFilled = samplesSinceLastFrame = 0;
                 }
+                RefreshSettingsPreview();
             };
 
             tbLowFftCrossoverNote.Leave += (_, __) =>
@@ -618,6 +621,7 @@ namespace Spectrum
                 {
                     tbLowFftCrossoverNote.Text = LOW_FFT_CROSSOVER_NOTE;
                 }
+                RefreshSettingsPreview();
             };
 
             tbLowFftCrossoverSemitones.Leave += (_, __) =>
@@ -1075,6 +1079,7 @@ namespace Spectrum
             RefreshDisplayRange();
             RestartCaptureIfRunning(clearSpectrogram: false);
             pic.Invalidate();
+            RefreshSettingsPreview();
         }
 
         private void RebuildWindows()
@@ -1289,6 +1294,7 @@ namespace Spectrum
             field = v;
             tb.Text = field.ToString(CultureInfo.InvariantCulture);
             if (changed) onChanged?.Invoke();
+            RefreshSettingsPreview();
         }
 
         private void ApplyDouble(TextBox tb, ref double field, double min, double max,
@@ -1303,6 +1309,7 @@ namespace Spectrum
             field = v;
             tb.Text = field.ToString("0.########", CultureInfo.InvariantCulture);
             if (changed) onChanged?.Invoke();
+            RefreshSettingsPreview();
         }
 
         // ====================================================================
@@ -1312,6 +1319,8 @@ namespace Spectrum
         {
             LoadSettings(out bool restoredShowGridLines, out string restoredDeviceName, out bool restoredUseFlats);
             _useFlats = restoredUseFlats;
+
+            RefreshSettingsPreview();
 
             ring = new float[RingSize];
             hopSize = Math.Max(1, HOP_SIZE); // TARGET_FPS will refine after device selected

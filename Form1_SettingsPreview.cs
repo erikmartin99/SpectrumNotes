@@ -24,10 +24,11 @@ namespace Spectrum
     // ── Lightweight owner-drawn panel ────────────────────────────────────────
     internal sealed class SettingsPreviewPanel : Panel
     {
-        private const int RowHeight   = 16;   // px per row
-        private const int LabelCol    = 0;    // left edge of label
-        private const int ValueCol    = 158;  // left edge of value (fixed split)
-        private const int RowPadY     = 1;    // extra vertical padding above text
+        // Logical (96-DPI) sizes; scaled to the monitor's DPI at paint time.
+        private int RowHeight => LogicalToDeviceUnits(16);   // px per row
+        private const int LabelCol = 0;                       // left edge of label
+        private int ValueCol  => LogicalToDeviceUnits(158);  // left edge of value (fixed split)
+        private int RowPadY   => LogicalToDeviceUnits(1);    // extra vertical padding above text
 
         private static readonly Font  RowFont  = new Font("Segoe UI", 8.25f, FontStyle.Regular);
 
@@ -92,11 +93,15 @@ namespace Spectrum
         {
             // Anchor: top = just below cbShowCircle, bottom = just above lbEmail.
             // cbShowCircle.Bottom ≈ 544, lbEmail.Top ≈ 874 (both in tabAnalysis coords).
-            const int topY    = 549;   // a few px below cbShowCircle
-            const int bottomY = 868;   // a few px above lbEmail
+            // Computed from the (already DPI-scaled) neighbouring controls rather than
+            // hard-coded pixels, so the panel doesn't cover the key controls at >100% scaling.
+            int gap     = LogicalToDeviceUnits(5);
+            int topY    = cbShowCircle.Bottom + gap;   // a few px below cbShowCircle
+            int bottomY = lbEmail.Top - gap;           // a few px above lbEmail
 
-            settingsPreview.Location = new Point(7, topY);
-            settingsPreview.Size     = new Size(tabAnalysis.ClientSize.Width - 14, bottomY - topY);
+            settingsPreview.Location = new Point(LogicalToDeviceUnits(7), topY);
+            settingsPreview.Size     = new Size(tabAnalysis.ClientSize.Width - LogicalToDeviceUnits(14),
+                                                Math.Max(0, bottomY - topY));
             settingsPreview.Anchor   = AnchorStyles.Top | AnchorStyles.Bottom
                                      | AnchorStyles.Left | AnchorStyles.Right;
 
